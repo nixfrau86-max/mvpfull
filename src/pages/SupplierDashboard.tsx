@@ -3,7 +3,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { collection, query, where, addDoc, doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { Plus, Package, TrendingUp, Truck, AlertCircle, Users } from 'lucide-react';
+import { Plus, Package, TrendingUp, Truck, AlertCircle, Users, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 const SupplierDashboard = () => {
@@ -11,6 +11,7 @@ const SupplierDashboard = () => {
   const [supplier, setSupplier] = useState<any>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   // Form states
   const [productName, setProductName] = useState('');
@@ -68,7 +69,7 @@ const SupplierDashboard = () => {
       console.log('Attempting to create wave...', { productName, basePrice, threshold, deadline });
       
       if (!productName || !basePrice || !threshold || !deadline) {
-        alert('Please fill in all required fields (Product Name, Price, Threshold, and Deadline)');
+        setStatusMessage({ type: 'error', text: 'Please fill in all required fields.' });
         return;
       }
 
@@ -76,12 +77,12 @@ const SupplierDashboard = () => {
       const target = parseInt(threshold);
 
       if (isNaN(price) || price <= 0) {
-        alert('Please enter a valid price greater than 0');
+        setStatusMessage({ type: 'error', text: 'Please enter a valid price.' });
         return;
       }
 
       if (isNaN(target) || target <= 0) {
-        alert('Please enter a valid target threshold greater than 0');
+        setStatusMessage({ type: 'error', text: 'Please enter a valid threshold.' });
         return;
       }
 
@@ -91,7 +92,7 @@ const SupplierDashboard = () => {
         if (isNaN(d.getTime())) throw new Error('Invalid date');
         isoDeadline = d.toISOString();
       } catch (e) {
-        alert('Please enter a valid deadline date and time');
+        setStatusMessage({ type: 'error', text: 'Please enter a valid deadline.' });
         return;
       }
 
@@ -124,10 +125,12 @@ const SupplierDashboard = () => {
       setThreshold('');
       setDeadline('');
       
-      alert('Wave© launched successfully!');
+      setStatusMessage({ type: 'success', text: 'Wave© successfully completed!' });
+      // Auto-clear after 5 seconds
+      setTimeout(() => setStatusMessage(null), 5000);
     } catch (err: any) {
       console.error('Error creating wave:', err);
-      alert('Error creating wave: ' + (err.message || 'Unknown error'));
+      setStatusMessage({ type: 'error', text: 'Launch failed: ' + (err.message || 'Check connection') });
     }
   };
 
@@ -166,7 +169,17 @@ const SupplierDashboard = () => {
 
   return (
     <div className="bg-[#fcfcfd] min-h-screen pb-20">
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-12 relative">
+        {statusMessage && (
+          <div className={`mb-6 p-4 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 ${
+            statusMessage.type === 'success' 
+              ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' 
+              : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'
+          }`}>
+            {statusMessage.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+            <span className="font-medium">{statusMessage.text}</span>
+          </div>
+        )}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
           <div>
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">Supplier Portal©</h1>
