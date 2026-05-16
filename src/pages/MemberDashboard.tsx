@@ -4,7 +4,7 @@ import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { collection, query, where, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { Link } from 'react-router-dom';
-import { Package, Clock, CheckCircle, ExternalLink, Users, AlertCircle, MapPin } from 'lucide-react';
+import { Package, Clock, CheckCircle, ExternalLink, Users, AlertCircle } from 'lucide-react';
 
 const MemberDashboard = () => {
   const [user] = useAuthState(auth);

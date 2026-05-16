@@ -4,7 +4,7 @@ import { useDocumentData } from 'react-firebase-hooks/firestore';
 import { doc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { Clock, Users, Shield, TrendingDown } from 'lucide-react';
+import { Clock, Users, Shield, TrendingDown, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const WaveDetail = () => {

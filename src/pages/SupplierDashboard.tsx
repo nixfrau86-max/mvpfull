@@ -3,7 +3,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { collection, query, where, addDoc, doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { Plus, Package, TrendingUp, Truck, AlertCircle } from 'lucide-react';
+import { Plus, Package, TrendingUp, Truck, AlertCircle, Users } from 'lucide-react';
 import { format } from 'date-fns';
 
 const SupplierDashboard = () => {
