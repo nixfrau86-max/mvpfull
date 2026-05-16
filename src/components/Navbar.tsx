@@ -13,7 +13,7 @@ const Navbar = () => {
           <div className="flex">
             <Link to="/" className="flex-shrink-0 flex items-center space-x-3 group">
               <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain" />
+                <img src="/mylogo.png.png" alt="Logo" className="w-10 h-10 object-contain" />
               </div>
               <span className="font-extrabold text-xl tracking-tight text-slate-900">
                 The Collective Savers<span className="text-indigo-600">©</span>
