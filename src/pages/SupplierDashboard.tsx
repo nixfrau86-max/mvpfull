@@ -29,23 +29,30 @@ const SupplierDashboard = () => {
   useEffect(() => {
     const checkSupplier = async () => {
       if (user) {
-        const docRef = doc(db, 'suppliers', user.uid);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-          setSupplier(docSnap.data());
-        } else {
-          // Auto-register as supplier for MVP demo
-          const newSupplier = {
-            supplierId: user.uid,
-            companyName: user.displayName || 'Demo Company',
-            email: user.email,
-            stripeConnectAccountId: 'acct_mock_123',
-            performanceBondPaid: true,
-            createdAt: new Date().toISOString()
-          };
-          await setDoc(docRef, newSupplier);
-          setSupplier(newSupplier);
+        try {
+          const docRef = doc(db, 'suppliers', user.uid);
+          const docSnap = await getDoc(docRef);
+          
+          if (docSnap.exists()) {
+            setSupplier(docSnap.data());
+          } else {
+            console.log('No supplier record found, creating demo supplier record for:', user.email);
+            // Auto-register as supplier for MVP demo
+            const newSupplier = {
+              supplierId: user.uid,
+              companyName: user.displayName || user.email?.split('@')[0] || 'Demo Company',
+              email: user.email,
+              stripeConnectAccountId: 'acct_mock_123',
+              performanceBondPaid: true,
+              createdAt: new Date().toISOString()
+            };
+            await setDoc(docRef, newSupplier);
+            setSupplier(newSupplier);
+            console.log('Supplier record created successfully');
+          }
+        } catch (err: any) {
+          console.error('Error checking/creating supplier record:', err);
+          // Don't alert here as it might be intrusive, but log it
         }
       }
       setLoading(false);
@@ -58,32 +65,69 @@ const SupplierDashboard = () => {
     if (!user) return;
 
     try {
+      console.log('Attempting to create wave...', { productName, basePrice, threshold, deadline });
+      
+      if (!productName || !basePrice || !threshold || !deadline) {
+        alert('Please fill in all required fields (Product Name, Price, Threshold, and Deadline)');
+        return;
+      }
+
+      const price = parseFloat(basePrice);
+      const target = parseInt(threshold);
+
+      if (isNaN(price) || price <= 0) {
+        alert('Please enter a valid price greater than 0');
+        return;
+      }
+
+      if (isNaN(target) || target <= 0) {
+        alert('Please enter a valid target threshold greater than 0');
+        return;
+      }
+
+      let isoDeadline;
+      try {
+        const d = new Date(deadline);
+        if (isNaN(d.getTime())) throw new Error('Invalid date');
+        isoDeadline = d.toISOString();
+      } catch (e) {
+        alert('Please enter a valid deadline date and time');
+        return;
+      }
+
       const waveData = {
         supplierId: user.uid,
         productName,
-        description,
-        basePrice: parseFloat(basePrice),
-        threshold: parseInt(threshold),
-        deadline: new Date(deadline).toISOString(),
+        description: description || '',
+        basePrice: price,
+        threshold: target,
+        deadline: isoDeadline,
         status: 'active',
         currentParticipants: 0,
         createdAt: new Date().toISOString(),
         discountTiers: []
       };
 
+      console.log('Sending wave data to Firestore:', waveData);
       const docRef = await addDoc(collection(db, 'waves'), waveData);
-      // Update with ID
+      
+      // Update with ID field for convenience in queries
       await setDoc(doc(db, 'waves', docRef.id), { ...waveData, waveId: docRef.id });
       
+      console.log('Wave created successfully with ID:', docRef.id);
       setShowCreateForm(false);
+      
       // Reset form
       setProductName('');
       setDescription('');
       setBasePrice('');
       setThreshold('');
       setDeadline('');
-    } catch (err) {
+      
+      alert('Wave© launched successfully!');
+    } catch (err: any) {
       console.error('Error creating wave:', err);
+      alert('Error creating wave: ' + (err.message || 'Unknown error'));
     }
   };
 
