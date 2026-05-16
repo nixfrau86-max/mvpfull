@@ -16,24 +16,59 @@ const LandingPage = () => {
         <img
           src="/hero-bg.jpg"
           alt="Premium background"
-          className="absolute inset-0 -z-10 h-full w-full object-cover opacity-30"
+          className="absolute inset-0 -z-10 h-full w-full object-cover opacity-20"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/50 via-slate-900 to-slate-900"></div>
+        
         <div className="mx-auto max-w-7xl px-6 lg:px-8 relative">
-          <div className="mx-auto max-w-2xl text-center">
-            <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-7xl mb-6">
-              Buy together, <span className="text-indigo-400 italic">save</span> together.
+          <div className="mx-auto max-w-3xl text-center">
+            <h1 className="text-5xl font-black tracking-tight text-white sm:text-7xl mb-8 leading-[1.1]">
+              Stop paying full price. <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 italic">
+                Start buying together.
+              </span>
             </h1>
-            <p className="mt-6 text-lg leading-8 text-slate-300 max-w-xl mx-auto">
-              Join collective Waves© and unlock bulk pricing without the commitment of subscriptions. The power of the crowd, delivered to your door.
+            
+            <p className="text-xl leading-relaxed text-slate-300 mb-12 font-medium">
+              Join a wave – when enough people join, everyone gets the lower price. <br className="hidden md:block" />
+              <strong className="text-white">No subscription, no hidden fees.</strong> Your card is only charged if the wave succeeds.
             </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
+
+            {/* How it Works Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left mb-12">
+              {[
+                "1. Pick a product – tyres, electronics, streetwear.",
+                "2. Join a wave. Pre‑authorise your card (no charge).",
+                "3. Invite friends – the more join, the lower the price.",
+                "4. If the wave fills, your card is charged once. If not, you pay nothing."
+              ].map((step, i) => (
+                <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/10 p-4 rounded-2xl text-slate-300 text-sm font-bold flex items-center">
+                  <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full mr-3 shrink-0"></div>
+                  {step}
+                </div>
+              ))}
+            </div>
+
+            {/* Example Box */}
+            <div className="bg-indigo-600/10 border border-indigo-500/20 p-6 rounded-[2rem] text-left mb-12 backdrop-blur-md">
+              <p className="text-slate-300 leading-relaxed text-sm">
+                <span className="text-2xl mr-2">💡</span>
+                <strong className="text-white uppercase tracking-widest text-[10px] block mb-2">Example Case</strong>
+                A tyre that costs <span className="line-through text-slate-500">£90</span> at retail. Join a wave and you pay <strong className="text-indigo-400 text-lg">£72</strong> – you save £18. We take a small commission from your saving. The supplier keeps their full price.
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-center gap-4">
               <Link
                 to="/login"
-                className="rounded-full bg-indigo-600 px-10 py-4 text-lg font-bold text-white shadow-xl shadow-indigo-500/20 hover:bg-indigo-500 transition-all active:scale-95"
+                className="group relative inline-flex items-center justify-center px-12 py-5 text-lg font-black text-white transition-all duration-200 bg-indigo-600 rounded-full hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 shadow-2xl shadow-indigo-500/40 active:scale-95"
               >
-                Start Saving Now
+                Join the first wave – free
+                <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Link>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                No subscription. Cancel anytime. Just collective savings.
+              </p>
             </div>
           </div>
         </div>
