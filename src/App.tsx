@@ -10,7 +10,7 @@ import AdminDashboard from './pages/AdminDashboard';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-[#fcfcfd] flex flex-col font-sans selection:bg-indigo-100 selection:text-indigo-900">
         <Navbar />
         <main className="flex-grow">
           <Routes>
@@ -22,9 +22,24 @@ function App() {
             <Route path="/wave/:id" element={<WaveDetail />} />
           </Routes>
         </main>
-        <footer className="bg-white border-t py-8">
-          <div className="max-w-7xl mx-auto px-4 text-center text-gray-500 text-sm">
-            &copy; {new Date().getFullYear()} Collective Savers. No subscriptions, just collective power.
+        <footer className="bg-white border-t border-slate-100 py-16">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
+                  <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain brightness-0 invert" />
+                </div>
+                <span className="font-black text-slate-900 tracking-tight">The Collective Savers©</span>
+              </div>
+              <div className="flex space-x-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                <a href="#" className="hover:text-indigo-600 transition-colors">Privacy Policy</a>
+                <a href="#" className="hover:text-indigo-600 transition-colors">Terms of Service</a>
+                <a href="#" className="hover:text-indigo-600 transition-colors">Supplier Terms</a>
+              </div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                &copy; {new Date().getFullYear()} The Collective Savers©. Premium Collective Buying.
+              </div>
+            </div>
           </div>
         </footer>
       </div>

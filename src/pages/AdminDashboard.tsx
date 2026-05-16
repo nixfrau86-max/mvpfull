@@ -42,77 +42,111 @@ const AdminDashboard = () => {
   if (loading) return <div className="text-center py-20">Loading admin console...</div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
-      <div className="flex items-center mb-8">
-        <Shield className="h-8 w-8 text-red-600 mr-3" />
-        <h1 className="text-3xl font-bold text-gray-900">Admin Control Panel</h1>
-      </div>
+    <div className="bg-[#fcfcfd] min-h-screen pb-20">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <header className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="bg-rose-100 p-2 rounded-lg">
+                <Shield className="h-6 w-6 text-rose-600" />
+              </div>
+              <h1 className="text-4xl font-black text-slate-900 tracking-tight">Admin Console©</h1>
+            </div>
+            <p className="text-slate-500 font-medium">Critical wave management and system overrides.</p>
+          </div>
+          <div className="flex items-center space-x-2 text-[10px] font-black text-rose-600 uppercase tracking-widest bg-rose-50 px-4 py-2 rounded-full border border-rose-100">
+            <div className="w-2 h-2 bg-rose-600 rounded-full animate-pulse"></div>
+            <span>High Privilege Access</span>
+          </div>
+        </header>
 
-      {message && (
-        <div className={`mb-6 p-4 rounded-xl flex items-center ${message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-          {message.type === 'success' ? <CheckCircle className="h-5 w-5 mr-2" /> : <XCircle className="h-5 w-5 mr-2" />}
-          {message.text}
+        {message && (
+          <div className={`mb-10 p-6 rounded-[2rem] flex items-center shadow-lg animate-in fade-in slide-in-from-top-4 duration-300 ${
+            message.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-100' : 'bg-rose-50 text-rose-800 border border-rose-100'
+          }`}>
+            <div className={`p-2 rounded-xl mr-4 ${message.type === 'success' ? 'bg-emerald-100' : 'bg-rose-100'}`}>
+              {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
+            </div>
+            <span className="font-bold text-sm">{message.text}</span>
+          </div>
+        )}
+
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-100">
+                  <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Wave Target</th>
+                  <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Global Status</th>
+                  <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Engagement</th>
+                  <th className="px-8 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Admin Override©</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {waves?.map((wave: any) => (
+                  <tr key={wave.waveId} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-8 py-6">
+                      <div className="text-sm font-bold text-slate-900 mb-1">{wave.productName}</div>
+                      <div className="flex items-center space-x-3">
+                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-tight">ID: {wave.waveId.slice(0, 8)}...</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                          {wave.createdAt?.seconds ? format(new Date(wave.createdAt.seconds * 1000), 'MMM dd, HH:mm') : 'Recently'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className={`px-3 py-1.5 inline-flex text-[10px] leading-5 font-black rounded-full uppercase tracking-widest ${
+                        wave.status === 'active' ? 'bg-indigo-50 text-indigo-700' : 
+                        wave.status === 'locking' ? 'bg-amber-50 text-amber-700 animate-pulse' :
+                        wave.status === 'locked' ? 'bg-emerald-50 text-emerald-700' : 
+                        wave.status === 'failed' ? 'bg-rose-50 text-rose-700' :
+                        'bg-slate-100 text-slate-600'
+                      }`}>
+                        {wave.status}
+                      </span>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-bold text-slate-900">{wave.currentParticipants}</span>
+                        <span className="text-slate-400 text-xs">/ {wave.threshold}</span>
+                      </div>
+                      <div className="w-24 bg-slate-100 h-1 rounded-full mt-2 overflow-hidden">
+                        <div 
+                          className="bg-indigo-600 h-full rounded-full" 
+                          style={{ width: `${Math.min(((wave.currentParticipants || 0) / wave.threshold) * 100, 100)}%` }}
+                        ></div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6 text-right space-x-3">
+                      {wave.status === 'active' ? (
+                        <>
+                          <button
+                            onClick={() => handleForceAction(wave.waveId, 'forceLock')}
+                            disabled={!!processing}
+                            className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95 disabled:opacity-50"
+                          >
+                            {processing === wave.waveId ? <RefreshCw className="h-3 w-3 animate-spin mr-2" /> : <Lock className="h-3 w-3 mr-2" />}
+                            Lock
+                          </button>
+                          <button
+                            onClick={() => handleForceAction(wave.waveId, 'forceFail')}
+                            disabled={!!processing}
+                            className="inline-flex items-center px-4 py-2 bg-rose-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-rose-700 transition-all shadow-lg shadow-rose-200 active:scale-95 disabled:opacity-50"
+                          >
+                            {processing === wave.waveId ? <RefreshCw className="h-3 w-3 animate-spin mr-2" /> : <XCircle className="h-3 w-3 mr-2" />}
+                            Fail
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">No Action Required</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      )}
-
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wave / Product</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Participants</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {waves?.map((wave: any) => (
-              <tr key={wave.waveId}>
-                <td className="px-6 py-4">
-                  <div className="text-sm font-bold text-gray-900">{wave.productName}</div>
-                  <div className="text-xs text-gray-500">ID: {wave.waveId}</div>
-                  <div className="text-xs text-gray-400">{wave.createdAt?.seconds ? format(new Date(wave.createdAt.seconds * 1000), 'MMM dd, HH:mm') : 'Recently'}</div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    wave.status === 'active' ? 'bg-blue-100 text-blue-800' : 
-                    wave.status === 'locking' ? 'bg-amber-100 text-amber-800 animate-pulse' :
-                    wave.status === 'locked' ? 'bg-green-100 text-green-800' : 
-                    wave.status === 'failed' ? 'bg-red-100 text-red-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {wave.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500">
-                  {wave.currentParticipants} / {wave.threshold}
-                </td>
-                <td className="px-6 py-4 text-right space-x-2">
-                  {wave.status === 'active' && (
-                    <>
-                      <button
-                        onClick={() => handleForceAction(wave.waveId, 'forceLock')}
-                        disabled={!!processing}
-                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-bold rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                      >
-                        {processing === wave.waveId ? <RefreshCw className="h-3 w-3 animate-spin mr-1" /> : <Lock className="h-3 w-3 mr-1" />}
-                        Force Lock
-                      </button>
-                      <button
-                        onClick={() => handleForceAction(wave.waveId, 'forceFail')}
-                        disabled={!!processing}
-                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-bold rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
-                      >
-                        {processing === wave.waveId ? <RefreshCw className="h-3 w-3 animate-spin mr-1" /> : <XCircle className="h-3 w-3 mr-1" />}
-                        Force Fail
-                      </button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </div>
   );
