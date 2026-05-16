@@ -93,7 +93,7 @@ const LoginPage = () => {
       <div className="max-w-md w-full space-y-8 bg-white p-12 rounded-[3rem] shadow-2xl shadow-slate-200 border border-slate-100 relative z-10">
         <div className="text-center">
           <div className="w-16 h-16 flex items-center justify-center mx-auto mb-8">
-            <img src="/MYLogo.png.png" alt="Logo" className="w-14 h-14 object-contain" />
+            <img src="/Collectivesaverslogo.png.png" alt="Logo" className="w-14 h-14 object-contain" />
           </div>
           
           <div className="flex bg-slate-50 p-1 rounded-2xl mb-8">

@@ -27,7 +27,7 @@ function App() {
             <div className="flex flex-col md:flex-row justify-between items-center gap-8">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 flex items-center justify-center">
-                  <img src="/MYLogo.png.png" alt="Logo" className="w-10 h-10 object-contain" />
+                  <img src="/Collectivesaverslogo.png.png" alt="Logo" className="w-10 h-10 object-contain" />
                 </div>
                 <span className="font-black text-slate-900 tracking-tight">The Collective Savers©</span>
               </div>
