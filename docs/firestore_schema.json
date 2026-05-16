@@ -1,0 +1,112 @@
+{
+  "collections": {
+    "users": {
+      "description": "Registered members of the platform.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "uid": { "type": "string", "description": "Firebase Auth UID" },
+          "email": { "type": "string", "format": "email" },
+          "name": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["uid", "email", "name", "createdAt"]
+      }
+    },
+    "suppliers": {
+      "description": "Registered suppliers who create Waves.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "supplierId": { "type": "string" },
+          "companyName": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "stripeConnectAccountId": { "type": "string", "description": "Stripe account for payouts" },
+          "performanceBondPaid": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["supplierId", "companyName", "email", "stripeConnectAccountId", "performanceBondPaid", "createdAt"]
+      }
+    },
+    "waves": {
+      "description": "Collective buying opportunities.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "waveId": { "type": "string" },
+          "supplierId": { "type": "string", "description": "Reference to suppliers collection" },
+          "productName": { "type": "string" },
+          "description": { "type": "string" },
+          "basePrice": { "type": "number", "description": "Price in GBP (including commission)" },
+          "threshold": { "type": "number", "description": "Minimum participants required" },
+          "deadline": { "type": "string", "format": "date-time" },
+          "discountTiers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "participants": { "type": "number" },
+                "price": { "type": "number" }
+              }
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "locking", "locked", "failed", "completed"]
+          },
+          "currentParticipants": { "type": "number" },
+          "finalPrice": { "type": "number" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["waveId", "supplierId", "productName", "basePrice", "threshold", "deadline", "status", "currentParticipants", "createdAt"]
+      }
+    },
+    "waveMembers": {
+      "description": "Mapping of users who joined specific Waves.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "userId": { "type": "string", "description": "Reference to users collection" },
+          "waveId": { "type": "string", "description": "Reference to waves collection" },
+          "paymentIntentId": { "type": "string", "description": "Stripe PaymentIntent ID (manual capture)" },
+          "joinedAt": { "type": "string", "format": "date-time" },
+          "deliveryAddress": {
+            "type": "object",
+            "properties": {
+              "street": { "type": "string" },
+              "city": { "type": "string" },
+              "postcode": { "type": "string" },
+              "country": { "type": "string" }
+            }
+          }
+        },
+        "required": ["id", "userId", "waveId", "paymentIntentId", "joinedAt"]
+      }
+    },
+    "orders": {
+      "description": "Successful purchases after a Wave is locked.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "orderId": { "type": "string" },
+          "userId": { "type": "string" },
+          "waveId": { "type": "string" },
+          "supplierId": { "type": "string" },
+          "totalAmount": { "type": "number" },
+          "commission": { "type": "number" },
+          "status": {
+            "type": "string",
+            "enum": ["paid", "shipped", "delivered"]
+          },
+          "trackingNumber": { "type": "string" },
+          "addressProvided": { "type": "boolean", "description": "Whether the user has provided a delivery address after the wave locked." },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "shippedAt": { "type": "string", "format": "date-time" },
+          "deliveredAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["orderId", "userId", "waveId", "supplierId", "totalAmount", "commission", "status", "createdAt"]
+      }
+    }
+  }
+}

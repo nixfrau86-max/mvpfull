@@ -1,0 +1,171 @@
+openapi: 3.0.3
+info:
+  title: The Collective Savers Cloud Functions API
+  description: API for managing collective buying Waves, payments via Stripe, and order fulfillment. Firebase Project ID/Number 63446592652.
+  version: 1.0.0
+servers:
+  - url: https://us-central1-collective-savers.cloudfunctions.net
+paths:
+  /joinWave:
+    post:
+      summary: User joins a Wave
+      description: Creates a Stripe PaymentIntent with manual capture and registers the user in the waveMembers collection.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                waveId:
+                  type: string
+                userId:
+                  type: string
+              required:
+                - waveId
+                - userId
+      responses:
+        '200':
+          description: Successfully joined wave
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  paymentIntentId:
+                    type: string
+        '400':
+          description: Invalid request or Wave already locked/failed
+        '500':
+          description: Stripe error or Firestore error
+
+  /lockWave:
+    post:
+      summary: Manually lock a Wave
+      description: Updates Wave status to locked, calculates final price, and captures all pre-authorized payments.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                waveId:
+                  type: string
+              required:
+                - waveId
+      responses:
+        '200':
+          description: Wave locked and payments captured
+        '403':
+          description: Unauthorized (Admin/Supplier only)
+        '500':
+          description: Payment capture failure or system error
+
+  /markOrderShipped:
+    post:
+      summary: Supplier marks an order as shipped
+      description: Updates order status to shipped and records the tracking number.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId:
+                  type: string
+                trackingNumber:
+                  type: string
+              required:
+                - orderId
+                - trackingNumber
+      responses:
+        '200':
+          description: Order updated and notification sent
+        '403':
+          description: Unauthorized
+
+  /admin/forceLock:
+    post:
+      summary: Admin override to force lock a Wave
+      description: Forcefully transitions a Wave to 'locking' status and triggers payment capture, regardless of participant count.
+      security:
+        - AdminAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                waveId:
+                  type: string
+              required:
+                - waveId
+      responses:
+        '200':
+          description: Force lock sequence initiated
+        '403':
+          description: Unauthorized
+
+  /admin/forceFail:
+    post:
+      summary: Admin override to cancel a Wave
+      description: Forcefully transitions a Wave to 'failed' status and cancels all authorizations.
+      security:
+        - AdminAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                waveId:
+                  type: string
+              required:
+                - waveId
+      responses:
+        '200':
+          description: Wave forcefully failed
+        '403':
+          description: Unauthorized
+
+  /cronWaveFailure:
+    get:
+      summary: Scheduled job to fail expired Waves
+      description: Periodically checks for active Waves past their deadline and cancels them.
+      responses:
+        '200':
+          description: Cron job processed successfully
+
+components:
+  schemas:
+    Wave:
+      $ref: './firestore_schema.json#/collections/waves/schema'
+    Order:
+      $ref: './firestore_schema.json#/collections/orders/schema'
+    
+    NotificationEvent:
+      type: object
+      properties:
+        eventType:
+          type: string
+          enum: [WAVE_LOCKED, WAVE_FAILED, ORDER_SHIPPED, ADDRESS_REQUEST]
+        recipientEmail:
+          type: string
+          format: email
+        payload:
+          type: object
+          description: Data required for the specific template.
+      required:
+        - eventType
+        - recipientEmail
+        - payload
+
+  securitySchemes:
+    AdminAuth:
+      type: http
+      scheme: bearer
+      description: Bearer token with admin privileges.
