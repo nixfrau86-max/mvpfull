@@ -55,7 +55,9 @@ const MemberDashboard = () => {
         currentParticipants: 0,
         createdAt: new Date().toISOString(),
         createdBy: user.uid,
-        discountTiers: []
+        discountTiers: [],
+        imageUrl: product.imageUrl || '',
+        sku: product.sku || ''
       };
 
       const docRef = await addDoc(collection(db, 'waves'), waveData);
@@ -263,9 +265,17 @@ const MemberDashboard = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {availableProducts?.map((product: any) => (
-                    <div key={product.productId} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col h-full hover:shadow-xl transition-all">
+                    <div key={product.productId} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col h-full hover:shadow-xl transition-all overflow-hidden group">
+                      {product.imageUrl && (
+                        <div className="h-48 -mx-8 -mt-8 mb-6 overflow-hidden">
+                          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                        </div>
+                      )}
                       <div className="flex justify-between items-start mb-4">
-                        <h3 className="font-bold text-xl text-slate-900">{product.name}</h3>
+                        <div>
+                          <h3 className="font-bold text-xl text-slate-900">{product.name}</h3>
+                          {product.sku && <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">SKU: {product.sku}</p>}
+                        </div>
                         <span className="text-indigo-600 font-black">£{product.price}</span>
                       </div>
                       <p className="text-slate-500 text-sm mb-8 line-clamp-2">{product.description}</p>

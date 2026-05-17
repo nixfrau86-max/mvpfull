@@ -111,10 +111,15 @@ const LandingPage = () => {
               to={`/wave/${wave.waveId}`}
               className="group bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden flex flex-col h-full"
             >
+              {wave.imageUrl && (
+                <div className="h-56 w-full overflow-hidden">
+                  <img src={wave.imageUrl} alt={wave.productName} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                </div>
+              )}
               <div className="p-8 flex flex-col flex-grow">
                 <div className="flex justify-between items-start mb-6">
                   <div className="bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-indigo-100">
-                    Active Wave™
+                    {wave.sku ? `SKU: ${wave.sku}` : 'Active Wave™'}
                   </div>
                   <div className="flex items-center text-slate-400 text-sm font-medium">
                     <Clock className="h-3.5 w-3.5 mr-1.5" />

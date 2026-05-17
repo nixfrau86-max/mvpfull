@@ -66,14 +66,27 @@ const WaveDetail = () => {
           <div className="lg:flex">
             {/* Left Column: Visuals & Info */}
             <div className="lg:w-1/2 bg-slate-900 p-12 lg:p-20 relative overflow-hidden group">
+              {wave.imageUrl && (
+                <div className="absolute inset-0 z-0 opacity-40">
+                  <img src={wave.imageUrl} alt={wave.productName} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[3s]" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent"></div>
+                </div>
+              )}
               <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
                 <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-500 blur-[100px] rounded-full"></div>
                 <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-sky-500 blur-[100px] rounded-full"></div>
               </div>
               
               <div className="relative z-10 h-full flex flex-col">
-                <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/10 text-indigo-300 text-[10px] font-black uppercase tracking-widest border border-white/10 mb-10 w-fit">
-                  Live Opportunity©
+                <div className="flex items-center space-x-3 mb-10">
+                  <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/10 text-indigo-300 text-[10px] font-black uppercase tracking-widest border border-white/10 w-fit">
+                    Live Opportunity©
+                  </div>
+                  {wave.sku && (
+                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/5 text-slate-400 text-[10px] font-black uppercase tracking-widest border border-white/5 w-fit">
+                      SKU: {wave.sku}
+                    </div>
+                  )}
                 </div>
                 
                 <h1 className="text-4xl lg:text-5xl font-black text-white mb-8 tracking-tight leading-tight">

@@ -21,12 +21,16 @@ const SupplierDashboard = () => {
   const [basePrice, setBasePrice] = useState('');
   const [threshold, setThreshold] = useState('');
   const [deadline, setDeadline] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [sku, setSku] = useState('');
 
   // Product Form states
   const [pName, setPName] = useState('');
   const [pDesc, setPDesc] = useState('');
   const [pPrice, setPPrice] = useState('');
   const [pThreshold, setPThreshold] = useState('');
+  const [pImageUrl, setPImageUrl] = useState('');
+  const [pSku, setPSku] = useState('');
 
   // Queries - Performance: Added limits and ordering
   const wavesQuery = user ? query(
@@ -131,7 +135,9 @@ const SupplierDashboard = () => {
         status: 'active',
         currentParticipants: 0,
         createdAt: new Date().toISOString(),
-        discountTiers: []
+        discountTiers: [],
+        imageUrl: imageUrl || '',
+        sku: sku || ''
       };
 
       console.log('Sending wave data to Firestore:', waveData);
@@ -150,6 +156,8 @@ const SupplierDashboard = () => {
       setBasePrice('');
       setThreshold('');
       setDeadline('');
+      setImageUrl('');
+      setSku('');
       
       setStatusMessage({ type: 'success', text: 'Wave™ successfully completed!' });
       // Auto-clear after 5 seconds
@@ -176,7 +184,9 @@ const SupplierDashboard = () => {
         price,
         minThreshold: target,
         createdAt: new Date().toISOString(),
-        isAvailable: true
+        isAvailable: true,
+        imageUrl: pImageUrl || '',
+        sku: pSku || ''
       };
 
       const docRef = await addDoc(collection(db, 'products'), productData);
@@ -184,7 +194,7 @@ const SupplierDashboard = () => {
 
       setShowProductForm(false);
       setShowSuccessModal({ type: 'product', visible: true });
-      setPName(''); setPDesc(''); setPPrice(''); setPThreshold('');
+      setPName(''); setPDesc(''); setPPrice(''); setPThreshold(''); setPImageUrl(''); setPSku('');
       setStatusMessage({ type: 'success', text: 'Product Listing Created©' });
       setTimeout(() => setStatusMessage(null), 5000);
     } catch (err: any) {
@@ -310,25 +320,35 @@ const SupplierDashboard = () => {
               </div>
               <div className="space-y-6">
                 {myWaves?.map((wave: any) => (
-                  <div key={wave.waveId} className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-grow pr-4">
-                        <h3 className="font-bold text-xl text-slate-900 group-hover:text-indigo-600 transition-colors mb-2">{wave.productName}</h3>
-                        <div className="flex items-center text-slate-400 text-sm font-medium">
-                          <Users className="h-4 w-4 mr-2" />
-                          <span className="text-slate-900 font-bold mr-1">{wave.currentParticipants}</span>
-                          <span>/ {wave.threshold} Participants joined</span>
+                  <div key={wave.waveId} className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-shadow group overflow-hidden">
+                    <div className="flex gap-6">
+                      {wave.imageUrl && (
+                        <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0 shadow-sm border border-slate-100">
+                          <img src={wave.imageUrl} alt={wave.productName} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        </div>
+                      )}
+                      <div className="flex-grow">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-grow pr-4">
+                            <h3 className="font-bold text-xl text-slate-900 group-hover:text-indigo-600 transition-colors mb-1">{wave.productName}</h3>
+                            {wave.sku && <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">SKU: {wave.sku}</p>}
+                            <div className="flex items-center text-slate-400 text-sm font-medium">
+                              <Users className="h-4 w-4 mr-2" />
+                              <span className="text-slate-900 font-bold mr-1">{wave.currentParticipants}</span>
+                              <span>/ {wave.threshold} Participants joined</span>
+                            </div>
+                          </div>
+                          <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(wave.status)}`}>
+                            {wave.status}
+                          </span>
+                        </div>
+                        <div className="mt-6 w-full bg-slate-50 rounded-full h-2.5 overflow-hidden">
+                          <div 
+                            className="bg-indigo-600 h-full rounded-full transition-all duration-1000" 
+                            style={{ width: `${Math.min(((wave.currentParticipants || 0) / wave.threshold) * 100, 100)}%` }}
+                          ></div>
                         </div>
                       </div>
-                      <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(wave.status)}`}>
-                        {wave.status}
-                      </span>
-                    </div>
-                    <div className="mt-6 w-full bg-slate-50 rounded-full h-2.5 overflow-hidden">
-                      <div 
-                        className="bg-indigo-600 h-full rounded-full transition-all duration-1000" 
-                        style={{ width: `${Math.min(((wave.currentParticipants || 0) / wave.threshold) * 100, 100)}%` }}
-                      ></div>
                     </div>
                   </div>
                 ))}
@@ -347,10 +367,18 @@ const SupplierDashboard = () => {
               </div>
               <div className="grid grid-cols-1 gap-4">
                 {myProducts?.map((product: any) => (
-                  <div key={product.productId} className="bg-white p-6 rounded-3xl border border-slate-100 flex justify-between items-center shadow-sm">
-                    <div>
+                  <div key={product.productId} className="bg-white p-6 rounded-3xl border border-slate-100 flex gap-4 items-center shadow-sm group">
+                    {product.imageUrl && (
+                      <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-slate-50">
+                        <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                      </div>
+                    )}
+                    <div className="flex-grow">
                       <h4 className="font-bold text-slate-900">{product.name}</h4>
-                      <p className="text-xs text-slate-400">Bulk Price: £{product.price} • Target: {product.minThreshold}</p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-xs text-slate-400 font-medium">Bulk Price: £{product.price} • Target: {product.minThreshold}</p>
+                        {product.sku && <span className="text-[10px] bg-slate-50 px-2 py-0.5 rounded font-black text-slate-400 uppercase">SKU: {product.sku}</span>}
+                      </div>
                     </div>
                     <div className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">Live Listing</div>
                   </div>
@@ -518,6 +546,28 @@ const SupplierDashboard = () => {
                     />
                   </div>
                 </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Image URL</label>
+                    <input
+                      type="url"
+                      className="w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 font-semibold"
+                      placeholder="https://..."
+                      value={pImageUrl}
+                      onChange={(e) => setPImageUrl(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">SKU Number</label>
+                    <input
+                      type="text"
+                      className="w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 font-semibold"
+                      placeholder="SKU-123"
+                      value={pSku}
+                      onChange={(e) => setPSku(e.target.value)}
+                    />
+                  </div>
+                </div>
                 <div className="flex items-center justify-end space-x-6 pt-8">
                   <button type="button" onClick={() => setShowProductForm(false)} className="text-slate-400 font-bold">Cancel</button>
                   <button type="submit" className="bg-emerald-600 text-white px-10 py-4 rounded-full font-bold shadow-xl shadow-emerald-200 hover:bg-emerald-500 transition-all">List Product©</button>
@@ -578,6 +628,28 @@ const SupplierDashboard = () => {
                       placeholder="Min participants"
                       value={threshold}
                       onChange={(e) => setThreshold(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Image URL</label>
+                    <input
+                      type="url"
+                      className="w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 font-semibold focus:ring-2 focus:ring-indigo-600 transition-all"
+                      placeholder="https://..."
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">SKU Number</label>
+                    <input
+                      type="text"
+                      className="w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 font-semibold focus:ring-2 focus:ring-indigo-600 transition-all"
+                      placeholder="SKU-123"
+                      value={sku}
+                      onChange={(e) => setSku(e.target.value)}
                     />
                   </div>
                 </div>
