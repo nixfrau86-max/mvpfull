@@ -1,7 +1,7 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, ShieldAlert, Zap, Target, Lock, BarChart3, ChevronRight } from 'lucide-react';
+import { ArrowRight, ShieldAlert, Zap, Target, Lock, BarChart3, ChevronRight, TrendingDown } from 'lucide-react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useEffect } from 'react';
 
@@ -12,9 +12,17 @@ const LandingPage = () => {
   useEffect(() => {
     const checkRole = async () => {
       if (user) {
+        // Check if supplier
         const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
         if (supplierDoc.exists()) {
           navigate('/supplier');
+          return;
+        }
+        
+        // Check if admin
+        if (user.email === 'admin@collectivesavers.com') {
+          navigate('/admin');
+          return;
         }
       }
     };
@@ -40,22 +48,40 @@ const LandingPage = () => {
             </div>
 
             <h1 className="text-6xl md:text-8xl font-black tracking-tight text-white mb-8 leading-[0.9] animate-in fade-in slide-in-from-bottom-6 duration-1000">
-              PURCHASE <br />
+              STOP PAYING <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400 italic">
-                AS A COLLECTIVE.
+                FULL PRICE.
               </span>
             </h1>
 
             <p className="text-xl md:text-2xl leading-relaxed text-slate-400 mb-12 font-medium max-w-2xl animate-in fade-in duration-1000 delay-300">
-              Unlock pre-negotiated bulk pricing on premium automotive and tech assets. No subscriptions. No direct contact. Just pure volume power.
+              Join a Wave™ — when enough people join, everyone gets the lower price. <br className="hidden md:block" />
+              <strong className="text-white">No subscription, no hidden fees.</strong> Your card is only charged if the Wave™ succeeds.
             </p>
+
+            {/* Example Case Box */}
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-[2.5rem] max-w-xl mb-12 animate-in fade-in duration-1000 delay-400">
+              <div className="flex items-start space-x-4">
+                <div className="bg-indigo-500/20 p-3 rounded-2xl">
+                  <TrendingDown className="h-6 w-6 text-indigo-400" />
+                </div>
+                <div>
+                  <strong className="text-white uppercase tracking-widest text-[10px] block mb-2">Live Example Case</strong>
+                  <p className="text-slate-300 leading-relaxed text-sm">
+                    A premium tyre retailing at <span className="line-through text-slate-500">£90</span>. <br />
+                    Join a Wave™ and pay only <strong className="text-indigo-400 text-lg">£72</strong>. <br />
+                    <span className="text-xs text-slate-400 mt-2 block italic">Save £18 instantly when the collective threshold is met.</span>
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-6 animate-in fade-in duration-1000 delay-500">
               <Link
                 to={user ? "/dashboard" : "/login"}
                 className="group w-full sm:w-auto inline-flex items-center justify-center px-12 py-6 text-lg font-black text-white transition-all duration-300 bg-indigo-600 rounded-full hover:bg-indigo-500 hover:shadow-[0_0_40px_rgba(79,70,229,0.4)] active:scale-95"
               >
-                {user ? "ENTER MARKETPLACE™" : "JOIN THE COLLECTIVE™"}
+                JOIN THE COLLECTIVE™
                 <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               

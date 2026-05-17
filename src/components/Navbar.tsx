@@ -8,12 +8,19 @@ import { useEffect, useState } from 'react';
 const Navbar = () => {
   const [user] = useAuthState(auth);
   const [isSupplier, setIsSupplier] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkRole = async () => {
       if (user) {
+        // Check if supplier
         const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
-        setIsSupplier(supplierDoc.exists());
+        const isSupp = supplierDoc.exists();
+        setIsSupplier(isSupp);
+
+        // For MVP: Check if admin (using email convention or could check 'admins' collection)
+        const isAdminUser = user.email === 'admin@collectivesavers.com';
+        setIsAdmin(isAdminUser);
       }
     };
     checkRole();
@@ -34,14 +41,18 @@ const Navbar = () => {
             </Link>
           </div>
           <div className="flex items-center space-x-6">
-            {!isSupplier && (
+            {!isSupplier && !isAdmin && (
               <Link to="/" className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
                 Explore Waves™
               </Link>
             )}
             {user ? (
               <div className="flex items-center space-x-4">
-                {isSupplier ? (
+                {isAdmin ? (
+                  <Link to="/admin" className="text-slate-600 hover:text-rose-600 px-3 py-2 text-sm font-semibold transition-colors">
+                    Admin Console©
+                  </Link>
+                ) : isSupplier ? (
                   <Link to="/supplier" className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
                     Supplier Portal©
                   </Link>

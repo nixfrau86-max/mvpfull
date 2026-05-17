@@ -20,9 +20,17 @@ const WaveDetail = () => {
   useEffect(() => {
     const checkRole = async () => {
       if (user) {
+        // Check if supplier
         const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
         if (supplierDoc.exists()) {
           navigate('/supplier');
+          return;
+        }
+
+        // Check if admin
+        if (user.email === 'admin@collectivesavers.com') {
+          navigate('/admin');
+          return;
         }
       }
     };
