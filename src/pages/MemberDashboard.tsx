@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { collection, query, where, doc, getDoc, updateDoc, limit, orderBy, addDoc, setDoc } from 'firebase/firestore';
@@ -26,6 +26,18 @@ const MemberDashboard = () => {
   // Query available products
   const productsQuery = query(collection(db, 'products'), where('isAvailable', '==', true), limit(20));
   const [availableProducts, loadingProducts] = useCollectionData(productsQuery);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      if (user) {
+        const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
+        if (supplierDoc.exists()) {
+          navigate('/supplier');
+        }
+      }
+    };
+    checkRole();
+  }, [user, navigate]);
 
   // Query orders for user - Limit to recent 5 for performance
   const ordersQuery = user ? query(

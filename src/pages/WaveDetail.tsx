@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
-import { doc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Clock, Users, Shield, TrendingDown, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useEffect } from 'react';
 
 const WaveDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +16,18 @@ const WaveDetail = () => {
   const [error, setError] = useState('');
 
   const [wave] = useDocumentData(doc(db, 'waves', id || ''));
+
+  useEffect(() => {
+    const checkRole = async () => {
+      if (user) {
+        const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
+        if (supplierDoc.exists()) {
+          navigate('/supplier');
+        }
+      }
+    };
+    checkRole();
+  }, [user, navigate]);
 
   const handleJoin = async () => {
     if (!user) {

@@ -1,13 +1,28 @@
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
-import { doc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { User, Mail, Calendar, ShieldCheck, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const AccountPage = () => {
   const [user] = useAuthState(auth);
+  const navigate = useNavigate();
   const [userData] = useDocumentData(user ? doc(db, 'users', user.uid) : null);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      if (user) {
+        const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
+        if (supplierDoc.exists()) {
+          navigate('/supplier');
+        }
+      }
+    };
+    checkRole();
+  }, [user, navigate]);
 
   if (!user) return null;
 

@@ -1,23 +1,41 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper function to check if user is a supplier
+    function isSupplier() {
+      return exists(/databases/$(database)/documents/suppliers/$(request.auth.uid));
+    }
+
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+
     match /suppliers/{supplierId} {
-      allow read: if true;
+      // Users can't browse suppliers, only read specific ones if needed by backend (though we try to avoid)
+      allow read: if request.auth != null && (request.auth.uid == supplierId || !isSupplier());
       allow write: if request.auth != null && request.auth.uid == supplierId;
     }
+
     match /waves/{waveId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      // Users can read all waves. Suppliers can only read their own.
+      allow read: if request.auth != null && (!isSupplier() || resource.data.supplierId == request.auth.uid);
+      allow write: if request.auth != null && (request.auth.uid == request.resource.data.supplierId || resource.data.supplierId == request.auth.uid);
     }
+
+    match /products/{productId} {
+      // Users can read all available products to start waves. Suppliers can read all but only write their own.
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && (request.auth.uid == request.resource.data.supplierId || resource.data.supplierId == request.auth.uid);
+    }
+
     match /waveMembers/{memberId} {
-      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || request.auth.token.isSupplier == true);
-      allow create: if request.auth != null;
+      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || (isSupplier() && request.auth.uid == resource.data.supplierId));
+      allow create: if request.auth != null && !isSupplier();
     }
+
     match /orders/{orderId} {
-      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || request.auth.token.isSupplier == true);
+      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || (isSupplier() && request.auth.uid == resource.data.supplierId));
+      allow write: if request.auth != null && isSupplier() && request.auth.uid == resource.data.supplierId;
     }
   }
 }

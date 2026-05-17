@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import Navbar from './components/Navbar';
 
@@ -19,25 +19,28 @@ const PageLoader = () => (
   </div>
 );
 
-function App() {
+function AppContent() {
+  const location = useLocation();
+  const isAdminPath = location.pathname.startsWith('/admin');
+
   return (
-    <Router>
-      <div className="min-h-screen bg-[#fcfcfd] flex flex-col font-sans selection:bg-indigo-100 selection:text-indigo-900 text-slate-900">
-        <Navbar />
-        <main className="flex-grow">
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/dashboard" element={<MemberDashboard />} />
-              <Route path="/account" element={<AccountPage />} />
-              <Route path="/supplier" element={<SupplierDashboard />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin-login" element={<AdminLoginPage />} />
-              <Route path="/wave/:id" element={<WaveDetail />} />
-            </Routes>
-          </Suspense>
-        </main>
+    <div className={`min-h-screen ${isAdminPath ? 'bg-slate-950' : 'bg-[#fcfcfd]'} flex flex-col font-sans selection:bg-indigo-100 selection:text-indigo-900 text-slate-900`}>
+      {!isAdminPath && <Navbar />}
+      <main className="flex-grow">
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/dashboard" element={<MemberDashboard />} />
+            <Route path="/account" element={<AccountPage />} />
+            <Route path="/supplier" element={<SupplierDashboard />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin-login" element={<AdminLoginPage />} />
+            <Route path="/wave/:id" element={<WaveDetail />} />
+          </Routes>
+        </Suspense>
+      </main>
+      {!isAdminPath && (
         <footer className="bg-white border-t border-slate-100 py-16">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row justify-between items-center gap-8">
@@ -58,7 +61,15 @@ function App() {
             </div>
           </div>
         </footer>
-      </div>
+      )}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
