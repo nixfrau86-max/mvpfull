@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query, where, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, doc, getDoc, updateDoc, limit, orderBy } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { Link } from 'react-router-dom';
 import { Package, Clock, CheckCircle, ExternalLink, Users, AlertCircle } from 'lucide-react';
@@ -11,12 +11,22 @@ const MemberDashboard = () => {
   const [showAddressForm, setShowAddressForm] = useState<string | null>(null);
   const [address, setAddress] = useState({ street: '', city: '', postcode: '', country: 'UK' });
 
-  // Query waves user has joined
-  const joinedWavesQuery = user ? query(collection(db, 'waveMembers'), where('userId', '==', user.uid)) : null;
+  // Query waves user has joined - Limit to recent 10 for performance
+  const joinedWavesQuery = user ? query(
+    collection(db, 'waveMembers'), 
+    where('userId', '==', user.uid),
+    orderBy('joinedAt', 'desc'),
+    limit(10)
+  ) : null;
   const [joinedMemberships, loadingMemberships] = useCollectionData(joinedWavesQuery);
 
-  // Query orders for user
-  const ordersQuery = user ? query(collection(db, 'orders'), where('userId', '==', user.uid)) : null;
+  // Query orders for user - Limit to recent 5 for performance
+  const ordersQuery = user ? query(
+    collection(db, 'orders'), 
+    where('userId', '==', user.uid),
+    orderBy('createdAt', 'desc'),
+    limit(5)
+  ) : null;
   const [orders, loadingOrders] = useCollectionData(ordersQuery);
 
   const handleSubmitAddress = async (e: React.FormEvent, orderId: string) => {

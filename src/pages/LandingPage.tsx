@@ -1,12 +1,18 @@
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, limit, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Link } from 'react-router-dom';
 import { Clock, Users, ArrowRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const LandingPage = () => {
-  const wavesQuery = query(collection(db, 'waves'), where('status', '==', 'active'));
+  // Performance: Limit to 12 waves and order by creation
+  const wavesQuery = query(
+    collection(db, 'waves'), 
+    where('status', '==', 'active'),
+    orderBy('createdAt', 'desc'),
+    limit(12)
+  );
   const [waves, loading, error] = useCollectionData(wavesQuery);
 
   return (

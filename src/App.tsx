@@ -1,26 +1,38 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import Navbar from './components/Navbar';
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import MemberDashboard from './pages/MemberDashboard';
-import SupplierDashboard from './pages/SupplierDashboard';
-import WaveDetail from './pages/WaveDetail';
-import AdminDashboard from './pages/AdminDashboard';
+
+// Lazy load pages for better performance
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const MemberDashboard = lazy(() => import('./pages/MemberDashboard'));
+const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'));
+const WaveDetail = lazy(() => import('./pages/WaveDetail'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-[#fcfcfd] flex flex-col font-sans selection:bg-indigo-100 selection:text-indigo-900">
+      <div className="min-h-screen bg-[#fcfcfd] flex flex-col font-sans selection:bg-indigo-100 selection:text-indigo-900 text-slate-900">
         <Navbar />
         <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/dashboard" element={<MemberDashboard />} />
-            <Route path="/supplier" element={<SupplierDashboard />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/wave/:id" element={<WaveDetail />} />
-          </Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/dashboard" element={<MemberDashboard />} />
+              <Route path="/supplier" element={<SupplierDashboard />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/wave/:id" element={<WaveDetail />} />
+            </Routes>
+          </Suspense>
         </main>
         <footer className="bg-white border-t border-slate-100 py-16">
           <div className="max-w-7xl mx-auto px-6">

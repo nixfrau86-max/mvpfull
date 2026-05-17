@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query, where, addDoc, doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, query, where, addDoc, doc, getDoc, setDoc, limit, orderBy } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { Plus, Package, TrendingUp, Truck, AlertCircle, Users, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -20,11 +20,21 @@ const SupplierDashboard = () => {
   const [threshold, setThreshold] = useState('');
   const [deadline, setDeadline] = useState('');
 
-  // Queries
-  const wavesQuery = user ? query(collection(db, 'waves'), where('supplierId', '==', user.uid)) : null;
+  // Queries - Performance: Added limits and ordering
+  const wavesQuery = user ? query(
+    collection(db, 'waves'), 
+    where('supplierId', '==', user.uid),
+    orderBy('createdAt', 'desc'),
+    limit(20)
+  ) : null;
   const [myWaves] = useCollectionData(wavesQuery);
 
-  const ordersQuery = user ? query(collection(db, 'orders'), where('supplierId', '==', user.uid)) : null;
+  const ordersQuery = user ? query(
+    collection(db, 'orders'), 
+    where('supplierId', '==', user.uid),
+    orderBy('createdAt', 'desc'),
+    limit(50)
+  ) : null;
   const [myOrders] = useCollectionData(ordersQuery);
 
   useEffect(() => {
