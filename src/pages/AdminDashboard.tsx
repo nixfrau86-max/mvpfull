@@ -46,7 +46,7 @@ const AdminDashboard = () => {
         throw new Error(errorData.error || `Failed to ${action}`);
       }
 
-      setMessage({ type: 'success', text: `Wave ${waveId} ${action === 'forceLock' ? 'locked' : 'failed'} successfully.` });
+      setMessage({ type: 'success', text: `Wave™ ${waveId} ${action === 'forceLock' ? 'locked' : 'failed'} successfully.` });
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message });
     } finally {
@@ -86,7 +86,7 @@ const AdminDashboard = () => {
             }`}
           >
             <Activity className="h-4 w-4" />
-            <span>Waves</span>
+            <span>Waves™</span>
           </button>
           <button
             onClick={() => setActiveTab('members')}

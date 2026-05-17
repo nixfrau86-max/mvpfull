@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const MemberDashboard = lazy(() => import('./pages/MemberDashboard'));
+const AccountPage = lazy(() => import('./pages/AccountPage'));
 const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'));
 const WaveDetail = lazy(() => import('./pages/WaveDetail'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
@@ -29,6 +30,7 @@ function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/dashboard" element={<MemberDashboard />} />
+              <Route path="/account" element={<AccountPage />} />
               <Route path="/supplier" element={<SupplierDashboard />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin-login" element={<AdminLoginPage />} />
@@ -41,7 +43,7 @@ function App() {
             <div className="flex flex-col md:flex-row justify-between items-center gap-8">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 flex items-center justify-center">
-                  <img src="/Collectivesaverslogo.png.png" alt="Logo" className="w-10 h-10 object-contain" />
+                  <img src="/Collectivesaverslogo.png.png" alt="The Collective Savers© Logo" className="w-10 h-10 object-contain" />
                 </div>
                 <span className="font-black text-slate-900 tracking-tight">The Collective Savers©</span>
               </div>

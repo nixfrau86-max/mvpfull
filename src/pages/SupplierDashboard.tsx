@@ -3,13 +3,14 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { collection, query, where, addDoc, doc, getDoc, setDoc, limit, orderBy } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { Plus, Package, TrendingUp, Truck, AlertCircle, Users, CheckCircle } from 'lucide-react';
+import { Plus, Package, TrendingUp, Truck, AlertCircle, Users, CheckCircle, ShoppingBag } from 'lucide-react';
 import { format } from 'date-fns';
 
 const SupplierDashboard = () => {
   const [user] = useAuthState(auth);
   const [supplier, setSupplier] = useState<any>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showProductForm, setShowProductForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -20,6 +21,12 @@ const SupplierDashboard = () => {
   const [threshold, setThreshold] = useState('');
   const [deadline, setDeadline] = useState('');
 
+  // Product Form states
+  const [pName, setPName] = useState('');
+  const [pDesc, setPDesc] = useState('');
+  const [pPrice, setPPrice] = useState('');
+  const [pThreshold, setPThreshold] = useState('');
+
   // Queries - Performance: Added limits and ordering
   const wavesQuery = user ? query(
     collection(db, 'waves'), 
@@ -28,6 +35,13 @@ const SupplierDashboard = () => {
     limit(20)
   ) : null;
   const [myWaves] = useCollectionData(wavesQuery);
+
+  const productsQuery = user ? query(
+    collection(db, 'products'),
+    where('supplierId', '==', user.uid),
+    orderBy('createdAt', 'desc')
+  ) : null;
+  const [myProducts] = useCollectionData(productsQuery);
 
   const ordersQuery = user ? query(
     collection(db, 'orders'), 
@@ -135,12 +149,43 @@ const SupplierDashboard = () => {
       setThreshold('');
       setDeadline('');
       
-      setStatusMessage({ type: 'success', text: 'Wave© successfully completed!' });
+      setStatusMessage({ type: 'success', text: 'Wave™ successfully completed!' });
       // Auto-clear after 5 seconds
       setTimeout(() => setStatusMessage(null), 5000);
     } catch (err: any) {
       console.error('Error creating wave:', err);
       setStatusMessage({ type: 'error', text: 'Launch failed: ' + (err.message || 'Check connection') });
+    }
+  };
+
+  const handleCreateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    try {
+      const price = parseFloat(pPrice);
+      const target = parseInt(pThreshold);
+
+      const productData = {
+        supplierId: user.uid,
+        supplierName: supplier?.companyName || 'Unknown',
+        name: pName,
+        description: pDesc,
+        price,
+        minThreshold: target,
+        createdAt: new Date().toISOString(),
+        isAvailable: true
+      };
+
+      const docRef = await addDoc(collection(db, 'products'), productData);
+      await setDoc(doc(db, 'products', docRef.id), { ...productData, productId: docRef.id });
+
+      setShowProductForm(false);
+      setPName(''); setPDesc(''); setPPrice(''); setPThreshold('');
+      setStatusMessage({ type: 'success', text: 'Product Listing Created©' });
+      setTimeout(() => setStatusMessage(null), 5000);
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: 'Failed to create listing' });
     }
   };
 
@@ -198,12 +243,20 @@ const SupplierDashboard = () => {
               {supplier?.companyName}
             </p>
           </div>
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="bg-indigo-600 text-white px-8 py-4 rounded-full font-bold flex items-center hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 shrink-0"
-          >
-            <Plus className="h-5 w-5 mr-2" /> Launch New Wave©
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={() => setShowProductForm(true)}
+              className="bg-white text-indigo-600 border border-indigo-100 px-8 py-4 rounded-full font-bold flex items-center hover:bg-indigo-50 transition-all shadow-sm active:scale-95 shrink-0"
+            >
+              <ShoppingBag className="h-5 w-5 mr-2" /> List Product Template©
+            </button>
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="bg-indigo-600 text-white px-8 py-4 rounded-full font-bold flex items-center hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 shrink-0"
+            >
+              <Plus className="h-5 w-5 mr-2" /> Launch New Wave™
+            </button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -214,7 +267,7 @@ const SupplierDashboard = () => {
             </div>
             <div className="flex items-center text-indigo-600 mb-4">
               <TrendingUp className="h-5 w-5 mr-2" />
-              <span className="font-black uppercase text-[10px] tracking-widest">Active Waves©</span>
+              <span className="font-black uppercase text-[10px] tracking-widest">Active Waves™</span>
             </div>
             <div className="text-4xl font-black text-slate-900">
               {myWaves?.filter(w => w.status === 'active').length || 0}
@@ -246,41 +299,65 @@ const SupplierDashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Waves Management */}
-          <section>
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-slate-900">My Live Waves©</h2>
-              <div className="h-px flex-grow bg-slate-100 ml-6"></div>
-            </div>
-            <div className="space-y-6">
-              {myWaves?.map((wave: any) => (
-                <div key={wave.waveId} className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-grow pr-4">
-                      <h3 className="font-bold text-xl text-slate-900 group-hover:text-indigo-600 transition-colors mb-2">{wave.productName}</h3>
-                      <div className="flex items-center text-slate-400 text-sm font-medium">
-                        <Users className="h-4 w-4 mr-2" />
-                        <span className="text-slate-900 font-bold mr-1">{wave.currentParticipants}</span>
-                        <span>/ {wave.threshold} Participants joined</span>
+          <section className="space-y-12">
+            <div>
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold text-slate-900">My Live Waves™</h2>
+                <div className="h-px flex-grow bg-slate-100 ml-6"></div>
+              </div>
+              <div className="space-y-6">
+                {myWaves?.map((wave: any) => (
+                  <div key={wave.waveId} className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-grow pr-4">
+                        <h3 className="font-bold text-xl text-slate-900 group-hover:text-indigo-600 transition-colors mb-2">{wave.productName}</h3>
+                        <div className="flex items-center text-slate-400 text-sm font-medium">
+                          <Users className="h-4 w-4 mr-2" />
+                          <span className="text-slate-900 font-bold mr-1">{wave.currentParticipants}</span>
+                          <span>/ {wave.threshold} Participants joined</span>
+                        </div>
                       </div>
+                      <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(wave.status)}`}>
+                        {wave.status}
+                      </span>
                     </div>
-                    <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(wave.status)}`}>
-                      {wave.status}
-                    </span>
+                    <div className="mt-6 w-full bg-slate-50 rounded-full h-2.5 overflow-hidden">
+                      <div 
+                        className="bg-indigo-600 h-full rounded-full transition-all duration-1000" 
+                        style={{ width: `${Math.min(((wave.currentParticipants || 0) / wave.threshold) * 100, 100)}%` }}
+                      ></div>
+                    </div>
                   </div>
-                  <div className="mt-6 w-full bg-slate-50 rounded-full h-2.5 overflow-hidden">
-                    <div 
-                      className="bg-indigo-600 h-full rounded-full transition-all duration-1000" 
-                      style={{ width: `${Math.min(((wave.currentParticipants || 0) / wave.threshold) * 100, 100)}%` }}
-                    ></div>
+                ))}
+                {myWaves?.length === 0 && (
+                  <div className="py-20 text-center rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200">
+                    <p className="text-slate-500 font-bold">No active Waves™ yet.</p>
                   </div>
-                </div>
-              ))}
-              {myWaves?.length === 0 && (
-                <div className="py-20 text-center rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200">
-                  <Plus className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                  <p className="text-slate-500 font-bold">No active Waves© yet.</p>
-                </div>
-              )}
+                )}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold text-slate-900">Product Templates©</h2>
+                <div className="h-px flex-grow bg-slate-100 ml-6"></div>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                {myProducts?.map((product: any) => (
+                  <div key={product.productId} className="bg-white p-6 rounded-3xl border border-slate-100 flex justify-between items-center shadow-sm">
+                    <div>
+                      <h4 className="font-bold text-slate-900">{product.name}</h4>
+                      <p className="text-xs text-slate-400">Bulk Price: £{product.price} • Target: {product.minThreshold}</p>
+                    </div>
+                    <div className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">Live Listing</div>
+                  </div>
+                ))}
+                {myProducts?.length === 0 && (
+                  <div className="py-12 text-center rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200">
+                    <p className="text-slate-500 font-bold text-sm">No templates listed yet.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </section>
 
@@ -345,7 +422,7 @@ const SupplierDashboard = () => {
                     {myOrders?.length === 0 && (
                       <tr>
                         <td colSpan={3} className="px-8 py-20 text-center text-slate-400 text-sm font-medium italic">
-                          Successful Wave© orders will appear here for fulfillment.
+                          Successful Wave™ orders will appear here for fulfillment.
                         </td>
                       </tr>
                     )}
@@ -356,12 +433,71 @@ const SupplierDashboard = () => {
           </section>
         </div>
 
+        {/* Product Template Modal */}
+        {showProductForm && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6 z-[100]">
+            <div className="bg-white rounded-[3rem] max-w-xl w-full p-12 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
+              <div className="absolute top-0 left-0 w-full h-2 bg-emerald-500"></div>
+              <h2 className="text-3xl font-black text-slate-900 mb-8 tracking-tight">List Product Template©</h2>
+              <p className="text-xs text-slate-400 mb-6 font-bold uppercase tracking-widest">Allow users to start their own Waves™ using your products.</p>
+              <form onSubmit={handleCreateProduct} className="space-y-6">
+                <div>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Product Name</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 font-semibold"
+                    placeholder="e.g. Michelin Pilot Sport 5"
+                    value={pName}
+                    onChange={(e) => setPName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Description</label>
+                  <textarea
+                    rows={2}
+                    className="w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 font-semibold"
+                    value={pDesc}
+                    onChange={(e) => setPDesc(e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Bulk Price (GBP)</label>
+                    <input
+                      type="number"
+                      required
+                      className="w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 font-semibold"
+                      value={pPrice}
+                      onChange={(e) => setPPrice(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Min. Threshold</label>
+                    <input
+                      type="number"
+                      required
+                      className="w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 font-semibold"
+                      value={pThreshold}
+                      onChange={(e) => setPThreshold(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-end space-x-6 pt-8">
+                  <button type="button" onClick={() => setShowProductForm(false)} className="text-slate-400 font-bold">Cancel</button>
+                  <button type="submit" className="bg-emerald-600 text-white px-10 py-4 rounded-full font-bold shadow-xl shadow-emerald-200 hover:bg-emerald-500 transition-all">List Product©</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {/* Create Wave Modal */}
         {showCreateForm && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6 z-[100]">
             <div className="bg-white rounded-[3rem] max-w-xl w-full p-12 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
               <div className="absolute top-0 left-0 w-full h-2 bg-indigo-600"></div>
-              <h2 className="text-3xl font-black text-slate-900 mb-8 tracking-tight">Launch Wave©</h2>
+              <h2 className="text-3xl font-black text-slate-900 mb-8 tracking-tight">Launch Wave™</h2>
               <form onSubmit={handleCreateWave} className="space-y-6">
                 <div>
                   <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Product Name</label>
@@ -432,7 +568,7 @@ const SupplierDashboard = () => {
                     type="submit"
                     className="bg-indigo-600 text-white px-10 py-4 rounded-full font-bold hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-500/20 active:scale-95"
                   >
-                    Launch Now©
+                    Launch Now™
                   </button>
                 </div>
               </form>

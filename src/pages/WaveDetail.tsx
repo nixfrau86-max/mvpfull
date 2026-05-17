@@ -105,7 +105,7 @@ const WaveDetail = () => {
                       <div className="text-white font-black text-xl tracking-tight">
                         {formatDistanceToNow(new Date(wave.deadline))} left
                       </div>
-                      <div className="text-slate-500 text-xs font-bold uppercase tracking-widest">Wave window closing</div>
+                      <div className="text-slate-500 text-xs font-bold uppercase tracking-widest">Wave™ window closing</div>
                     </div>
                   </div>
                   
@@ -185,7 +185,7 @@ const WaveDetail = () => {
                       Authenticating...
                     </span>
                   ) : (
-                    wave.status === 'active' ? 'Commit to Wave©' : wave.status === 'locking' ? 'Locking Wave...' : 'Wave Inactive'
+                    wave.status === 'active' ? 'Commit to Wave™' : wave.status === 'locking' ? 'Locking Wave™...' : 'Wave™ Inactive'
                   )}
                 </button>
                 
@@ -194,7 +194,7 @@ const WaveDetail = () => {
                     <Shield className="h-3 w-3 mr-2" /> 100% Secured by Stripe
                   </div>
                   <p className="text-center text-[10px] leading-relaxed text-slate-400 max-w-xs font-medium">
-                    By committing, you authorize a £{wave.basePrice} hold. Zero funds leave your account until the Wave© successfully locks with {wave.threshold} members.
+                    By committing, you authorize a £{wave.basePrice} hold. Zero funds leave your account until the Wave™ successfully locks with {wave.threshold} members.
                   </p>
                 </div>
               </div>

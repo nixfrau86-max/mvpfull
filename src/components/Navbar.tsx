@@ -1,10 +1,23 @@
 import { Link } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
-import { auth } from '../firebase';
+import { LogOut, User } from 'lucide-react';
+import { auth, db } from '../firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 
 const Navbar = () => {
   const [user] = useAuthState(auth);
+  const [isSupplier, setIsSupplier] = useState(false);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      if (user) {
+        const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
+        setIsSupplier(supplierDoc.exists());
+      }
+    };
+    checkRole();
+  }, [user]);
 
   return (
     <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100">
@@ -13,7 +26,7 @@ const Navbar = () => {
           <div className="flex">
             <Link to="/" className="flex-shrink-0 flex items-center space-x-3 group">
               <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <img src="/Collectivesaverslogo.png.png" alt="Logo" className="w-10 h-10 object-contain" />
+                <img src="/Collectivesaverslogo.png.png" alt="The Collective Savers© Logo" className="w-10 h-10 object-contain" />
               </div>
               <span className="font-extrabold text-xl tracking-tight text-slate-900">
                 The Collective Savers<span className="text-indigo-600">©</span>
@@ -22,13 +35,24 @@ const Navbar = () => {
           </div>
           <div className="flex items-center space-x-6">
             <Link to="/" className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
-              Explore Waves©
+              Explore Waves™
             </Link>
             {user ? (
-              <div className="flex items-center space-x-2">
-                <Link to="/dashboard" className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
-                  My Waves
-                </Link>
+              <div className="flex items-center space-x-4">
+                {isSupplier ? (
+                  <Link to="/supplier" className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
+                    Supplier Portal©
+                  </Link>
+                ) : (
+                  <>
+                    <Link to="/dashboard" className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
+                      My Waves™
+                    </Link>
+                    <Link to="/account" className="flex items-center text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
+                      <User size={16} className="mr-1.5" /> Account
+                    </Link>
+                  </>
+                )}
                 <button 
                   onClick={() => auth.signOut()}
                   className="ml-4 flex items-center bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-slate-800 transition-all shadow-sm active:scale-95 cursor-pointer"
