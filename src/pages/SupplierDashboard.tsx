@@ -11,6 +11,7 @@ const SupplierDashboard = () => {
   const [supplier, setSupplier] = useState<any>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showProductForm, setShowProductForm] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState<{ type: 'product' | 'wave', visible: boolean }>({ type: 'wave', visible: false });
   const [loading, setLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -141,6 +142,7 @@ const SupplierDashboard = () => {
       
       console.log('Wave created successfully with ID:', docRef.id);
       setShowCreateForm(false);
+      setShowSuccessModal({ type: 'wave', visible: true });
       
       // Reset form
       setProductName('');
@@ -181,6 +183,7 @@ const SupplierDashboard = () => {
       await setDoc(doc(db, 'products', docRef.id), { ...productData, productId: docRef.id });
 
       setShowProductForm(false);
+      setShowSuccessModal({ type: 'product', visible: true });
       setPName(''); setPDesc(''); setPPrice(''); setPThreshold('');
       setStatusMessage({ type: 'success', text: 'Product Listing Created©' });
       setTimeout(() => setStatusMessage(null), 5000);
@@ -432,6 +435,38 @@ const SupplierDashboard = () => {
             </div>
           </section>
         </div>
+
+        {/* Success Prompt Modal */}
+        {showSuccessModal.visible && (
+          <div 
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-6 z-[110] animate-in fade-in duration-300"
+            onClick={() => setShowSuccessModal({ ...showSuccessModal, visible: false })}
+          >
+            <div 
+              className="bg-white rounded-[3rem] max-w-sm w-full p-10 shadow-2xl text-center scale-up-center cursor-pointer active:scale-95 transition-transform"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-500">
+                <CheckCircle size={40} />
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 mb-2">
+                {showSuccessModal.type === 'wave' ? 'Wave™ created' : 'Product listed'}
+              </h3>
+              <p className="text-slate-500 font-medium mb-8">
+                {showSuccessModal.type === 'wave' 
+                  ? 'Your collective buying wave is now live for members to join.' 
+                  : 'Distributors can now use this template to start new waves.'}
+              </p>
+              <button 
+                onClick={() => setShowSuccessModal({ ...showSuccessModal, visible: false })}
+                className="w-full bg-slate-900 text-white py-4 rounded-full font-bold hover:bg-slate-800 transition-all shadow-lg"
+              >
+                Got it
+              </button>
+              <p className="text-[10px] text-slate-400 mt-4 font-bold uppercase tracking-widest">Click anywhere to close</p>
+            </div>
+          </div>
+        )}
 
         {/* Product Template Modal */}
         {showProductForm && (
