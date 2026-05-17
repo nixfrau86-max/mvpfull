@@ -41,7 +41,7 @@ const Navbar = () => {
             </Link>
           </div>
           <div className="flex items-center space-x-6">
-            {!isSupplier && !isAdmin && (
+            {!isSupplier && (
               <Link to="/" className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
                 Explore Waves™
               </Link>

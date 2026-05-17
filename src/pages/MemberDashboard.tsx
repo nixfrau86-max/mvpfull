@@ -36,12 +36,6 @@ const MemberDashboard = () => {
           navigate('/supplier');
           return;
         }
-
-        // Check if admin
-        if (user.email === 'admin@collectivesavers.com') {
-          navigate('/admin');
-          return;
-        }
       }
     };
     checkRole();
