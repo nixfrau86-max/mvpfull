@@ -27,13 +27,7 @@ const Navbar = () => {
             {user ? (
               <div className="flex items-center space-x-2">
                 <Link to="/dashboard" className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
-                  Dashboard
-                </Link>
-                <Link to="/supplier" className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
-                  Supplier
-                </Link>
-                <Link to="/admin" className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
-                  Admin
+                  My Waves
                 </Link>
                 <button 
                   onClick={() => auth.signOut()}

@@ -1,14 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { collection, query, orderBy } from 'firebase/firestore';
-import { db } from '../firebase';
+import { auth, db } from '../firebase';
+import { useNavigate } from 'react-router-dom';
 import { Shield, Lock, XCircle, RefreshCw, CheckCircle, Users, Truck, Activity } from 'lucide-react';
 import { format } from 'date-fns';
 
 const AdminDashboard = () => {
+  const [user, authLoading] = useAuthState(auth);
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'waves' | 'members' | 'suppliers'>('waves');
   const [processing, setProcessing] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/admin-login');
+    }
+  }, [user, authLoading, navigate]);
 
   const wavesQuery = query(collection(db, 'waves'), orderBy('createdAt', 'desc'));
   const [waves, loadingWaves] = useCollectionData(wavesQuery);

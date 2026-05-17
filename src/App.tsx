@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import Navbar from './components/Navbar';
 
@@ -9,6 +9,7 @@ const MemberDashboard = lazy(() => import('./pages/MemberDashboard'));
 const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'));
 const WaveDetail = lazy(() => import('./pages/WaveDetail'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -30,6 +31,7 @@ function App() {
               <Route path="/dashboard" element={<MemberDashboard />} />
               <Route path="/supplier" element={<SupplierDashboard />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin-login" element={<AdminLoginPage />} />
               <Route path="/wave/:id" element={<WaveDetail />} />
             </Routes>
           </Suspense>
@@ -46,7 +48,7 @@ function App() {
               <div className="flex space-x-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                 <a href="#" className="hover:text-indigo-600 transition-colors">Privacy Policy</a>
                 <a href="#" className="hover:text-indigo-600 transition-colors">Terms of Service</a>
-                <a href="#" className="hover:text-indigo-600 transition-colors">Supplier Terms</a>
+                <Link to="/admin-login" className="hover:text-rose-600 transition-colors">Admin Console©</Link>
               </div>
               <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
                 &copy; {new Date().getFullYear()} The Collective Savers©. Premium Collective Buying.
