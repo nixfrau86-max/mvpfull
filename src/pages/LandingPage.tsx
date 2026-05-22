@@ -42,13 +42,19 @@ const LandingPage = () => {
             <p className="mt-8 text-xl leading-relaxed text-slate-400 max-w-xl mx-auto font-medium">
               Engage institutional-grade collective power. <br />No subscriptions. Just raw purchasing force.
             </p>
-            <div className="mt-12 flex items-center justify-center gap-x-8">
+            <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6">
               <Link
                 to="/login"
-                className="group relative px-12 py-5 bg-white text-slate-950 rounded-full font-black text-lg transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.2)]"
+                className="group relative px-12 py-5 bg-white text-slate-950 rounded-full font-black text-lg transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.2)] w-full sm:w-auto text-center"
               >
                 Enter the Collective
                 <div className="absolute inset-0 rounded-full bg-white animate-ping opacity-0 group-hover:opacity-10 transition-opacity"></div>
+              </Link>
+              <Link
+                to="/login?role=supplier"
+                className="px-12 py-5 bg-transparent border border-white/20 text-white rounded-full font-black text-lg transition-all hover:bg-white/5 active:scale-95 w-full sm:w-auto text-center"
+              >
+                Supplier Hub™
               </Link>
             </div>
           </div>

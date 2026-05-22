@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,6 +11,15 @@ const LoginPage = () => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const [targetRole, setTargetRole] = useState<'member' | 'supplier'>('member');
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('role') === 'supplier') {
+      setTargetRole('supplier');
+    }
+  }, [location]);
 
   const navigateToTarget = async (uid: string) => {
     const supplierDoc = await getDoc(doc(db, 'suppliers', uid));
@@ -43,6 +52,17 @@ const LoginPage = () => {
           name: name,
           createdAt: new Date().toISOString()
         });
+
+        if (targetRole === 'supplier') {
+          await setDoc(doc(db, 'suppliers', user.uid), {
+            supplierId: user.uid,
+            companyName: name + ' Distribution™',
+            email: user.email,
+            stripeConnectAccountId: 'acct_mock_' + user.uid.slice(0, 5),
+            performanceBondPaid: true,
+            createdAt: new Date().toISOString()
+          });
+        }
       }
       await navigateToTarget(uid);
     } catch (err: any) {
@@ -80,13 +100,13 @@ const LoginPage = () => {
       <div className="max-w-md w-full space-y-12 bg-white/[0.02] p-16 rounded-[4rem] shadow-2xl border border-white/5 relative z-10 backdrop-blur-3xl">
         <div className="text-center">
           <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-indigo-950/40 border border-white/10 group hover:rotate-12 transition-transform duration-500">
-            <img src="/logo.png" alt="Logo" className="w-12 h-12 object-contain brightness-0 invert" />
+            <img src="/logo.png" alt="Logo" className="w-12 h-12 object-contain" />
           </div>
           <h2 className="text-5xl font-black text-white tracking-tighter leading-none mb-4">
-            {isLogin ? 'Identity Verification™' : 'Node Enrollment™'}
+            {isLogin ? 'Identity Verification™' : targetRole === 'supplier' ? 'Supplier Enrollment™' : 'Node Enrollment™'}
           </h2>
           <p className="text-slate-500 font-medium tracking-tight uppercase text-[10px] tracking-[0.3em]">
-            {isLogin ? 'Establishing secure uplink' : 'Initiate collective synchronization'}
+            {isLogin ? 'Establishing secure uplink' : targetRole === 'supplier' ? 'Initialize distributor credentials' : 'Initiate collective synchronization'}
           </p>
         </div>
         
