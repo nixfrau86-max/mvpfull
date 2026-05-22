@@ -28,8 +28,8 @@ function App() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row justify-between items-center gap-8">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
-                  <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain brightness-0 invert" />
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain" />
                 </div>
                 <span className="font-black text-slate-900 tracking-tight">The Collective Savers™</span>
               </div>
