@@ -46,7 +46,7 @@ const Navbar = () => {
           </div>
           <div className="flex items-center space-x-10">
             {!isSupplier && (
-              <Link to="/" className="text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all">
+              <Link to="/marketplace" className="text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all">
                 Marketplace™
               </Link>
             )}

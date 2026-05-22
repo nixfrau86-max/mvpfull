@@ -125,7 +125,7 @@ const MemberDashboard = () => {
                     </div>
                     <h3 className="text-2xl font-black text-white mb-4 tracking-tight">No Active Protocols Found</h3>
                     <p className="text-slate-500 mb-10 max-w-xs mx-auto font-medium">Your current collective capacity is idle. Scan the marketplace to engage.</p>
-                    <Link to="/" className="inline-flex items-center px-10 py-5 bg-indigo-600 text-white rounded-full text-xs font-black uppercase tracking-[0.2em] hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-950/40">
+                    <Link to="/marketplace" className="inline-flex items-center px-10 py-5 bg-indigo-600 text-white rounded-full text-xs font-black uppercase tracking-[0.2em] hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-950/40">
                       Explore Market™ <ExternalLink className="ml-3 h-4 w-4" />
                     </Link>
                   </div>

@@ -78,7 +78,7 @@ const LegalPage = () => {
       <div className="bg-slate-900 pt-32 pb-20 relative overflow-hidden">
         <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
         <div className="max-w-4xl mx-auto px-6 relative z-10">
-          <Link to="/" className="inline-flex items-center text-indigo-400 text-xs font-black uppercase tracking-[0.2em] mb-8 hover:text-indigo-300 transition-colors">
+          <Link to="/marketplace" className="inline-flex items-center text-indigo-400 text-xs font-black uppercase tracking-[0.2em] mb-8 hover:text-indigo-300 transition-colors">
             <ChevronLeft size={14} className="mr-2" /> Return to Terminal
           </Link>
           <div className="flex items-center space-x-6 mb-6">
