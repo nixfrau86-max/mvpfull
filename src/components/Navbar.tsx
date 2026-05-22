@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { auth, db } from '../firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -7,18 +7,28 @@ import { doc, getDoc } from 'firebase/firestore';
 
 const Navbar = () => {
   const [user] = useAuthState(auth);
+  const { pathname } = useLocation();
   const [isSupplier, setIsSupplier] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkRole = async () => {
       if (user) {
-        const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
-        setIsSupplier(supplierDoc.exists());
-        setIsAdmin(user.email === 'admin@collectivesavers.com');
+        setLoading(true);
+        try {
+          const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
+          setIsSupplier(supplierDoc.exists());
+          setIsAdmin(user.email === 'admin@collectivesavers.com');
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setLoading(false);
+        }
       } else {
         setIsSupplier(false);
         setIsAdmin(false);
+        setLoading(false);
       }
     };
     checkRole();
@@ -45,7 +55,7 @@ const Navbar = () => {
             </Link>
           </div>
           <div className="flex items-center space-x-10">
-            {!isSupplier && (
+            {!loading && !isSupplier && pathname !== '/' && (
               <Link to="/marketplace" className="text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all">
                 Marketplace™
               </Link>

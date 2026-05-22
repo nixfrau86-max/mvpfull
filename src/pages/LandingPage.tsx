@@ -40,7 +40,7 @@ const LandingPage = () => {
               Buy together, <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-sky-400 italic">save</span> together.
             </h1>
             <p className="mt-8 text-xl leading-relaxed text-slate-400 max-w-xl mx-auto font-medium">
-              Join elite Waves™ and unlock institutional-grade pricing. <br />No subscriptions. Just raw collective force.
+              Engage institutional-grade collective power. <br />No subscriptions. Just raw purchasing force.
             </p>
             <div className="mt-12 flex items-center justify-center gap-x-8">
               <Link
