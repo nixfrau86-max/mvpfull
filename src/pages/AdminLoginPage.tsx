@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Lock, ArrowRight, AlertTriangle } from 'lucide-react';
+import { Lock, ArrowRight, AlertTriangle } from 'lucide-react';
 
 const AdminLoginPage = () => {
   const [email, setEmail] = useState('');
@@ -34,8 +34,8 @@ const AdminLoginPage = () => {
       
       <div className="max-w-md w-full space-y-8 bg-slate-900 p-12 rounded-[2.5rem] border border-slate-800 shadow-2xl relative z-10">
         <div className="text-center">
-          <div className="w-20 h-20 bg-rose-500/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-rose-500/20">
-            <Shield className="h-10 w-10 text-rose-500" />
+          <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-white/10 group hover:rotate-12 transition-all duration-500 hover:border-rose-500/50 hover:bg-rose-500/10">
+            <img src="/logo.png" alt="Logo" className="w-16 h-16 object-contain" />
           </div>
           
           <h2 className="text-3xl font-black text-white tracking-tight uppercase">

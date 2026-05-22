@@ -99,8 +99,8 @@ const LoginPage = () => {
       
       <div className="max-w-md w-full space-y-12 bg-white/[0.02] p-16 rounded-[4rem] shadow-2xl border border-white/5 relative z-10 backdrop-blur-3xl">
         <div className="text-center">
-          <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-indigo-950/40 border border-white/10 group hover:rotate-12 transition-transform duration-500">
-            <img src="/logo.png" alt="Logo" className="w-12 h-12 object-contain" />
+          <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-2xl border border-white/10 group hover:rotate-12 transition-all duration-500 hover:border-indigo-500/50 hover:bg-indigo-500/10">
+            <img src="/logo.png" alt="Logo" className="w-16 h-16 object-contain" />
           </div>
           <h2 className="text-5xl font-black text-white tracking-tighter leading-none mb-4">
             {isLogin ? 'Identity Verification™' : targetRole === 'supplier' ? 'Supplier Enrollment™' : 'Node Enrollment™'}

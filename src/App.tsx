@@ -8,6 +8,8 @@ import SupplierDashboard from './pages/SupplierDashboard';
 import WaveDetail from './pages/WaveDetail';
 import AdminDashboard from './pages/AdminDashboard';
 
+import AdminLoginPage from './pages/AdminLoginPage';
+
 function App() {
   return (
     <Router>
@@ -20,6 +22,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/dashboard" element={<MemberDashboard />} />
             <Route path="/supplier" element={<SupplierDashboard />} />
+            <Route path="/admin/terminal" element={<AdminLoginPage />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/wave/:id" element={<WaveDetail />} />
           </Routes>
