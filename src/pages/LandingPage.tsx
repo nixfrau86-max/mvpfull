@@ -1,170 +1,160 @@
-import { doc, getDoc } from 'firebase/firestore';
-import { db, auth } from '../firebase';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, ShieldAlert, Zap, Target, Lock, BarChart3, ChevronRight, TrendingDown } from 'lucide-react';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { useEffect } from 'react';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { collection, query, where } from 'firebase/firestore';
+import { db } from '../firebase';
+import { Link } from 'react-router-dom';
+import { Clock, Users, ArrowRight } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
 const LandingPage = () => {
-  const [user] = useAuthState(auth);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkRole = async () => {
-      if (user) {
-        // Check if supplier
-        const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
-        if (supplierDoc.exists()) {
-          navigate('/supplier');
-          return;
-        }
-      }
-    };
-    checkRole();
-  }, [user, navigate]);
+  const wavesQuery = query(collection(db, 'waves'), where('status', '==', 'active'));
+  const [waves, loading, error] = useCollectionData(wavesQuery);
 
   return (
-    <div className="bg-[#0a0c10] min-h-screen text-slate-300 selection:bg-indigo-500 selection:text-white overflow-hidden">
-      {/* Cinematic Hero */}
-      <div className="relative min-h-screen flex items-center pt-20">
-        {/* Background Effects */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-900/20 blur-[120px] rounded-full"></div>
-          <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-900/10 blur-[120px] rounded-full"></div>
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 w-full">
-          <div className="max-w-4xl">
-            <div className="inline-flex items-center space-x-3 mb-8 py-2 px-4 bg-indigo-500/10 border border-indigo-500/20 rounded-full animate-in fade-in slide-in-from-left-4 duration-700">
-              <Zap className="h-4 w-4 text-indigo-400" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-300">Next-Gen Collective Buying©</span>
+    <div className="bg-[#0b0c10] min-h-screen text-slate-300">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-slate-950 py-32 sm:py-48">
+        <img
+          src="/hero-cinematic.jpg"
+          alt="Premium background"
+          className="absolute inset-0 -z-10 h-full w-full object-cover opacity-40 mix-blend-overlay scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/20 via-slate-950/80 to-[#0b0c10]"></div>
+        <div className="mx-auto max-w-7xl px-6 lg:px-8 relative">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-8 backdrop-blur-md">
+              <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-indigo-400">Exclusive Collective Power™</span>
             </div>
-
-            <h1 className="text-6xl md:text-8xl font-black tracking-tight text-white mb-8 leading-[0.9] animate-in fade-in slide-in-from-bottom-6 duration-1000">
-              STOP PAYING <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400 italic">
-                FULL PRICE.
-              </span>
+            <h1 className="text-6xl font-black tracking-tighter text-white sm:text-8xl mb-8 leading-[0.9]">
+              Buy together, <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-sky-400 italic">save</span> together.
             </h1>
-
-            <p className="text-xl md:text-2xl leading-relaxed text-slate-400 mb-12 font-medium max-w-2xl animate-in fade-in duration-1000 delay-300">
-              Join a Wave™ — when enough people join, everyone gets the lower price. <br className="hidden md:block" />
-              <strong className="text-white">No subscription, no hidden fees.</strong> Your card is only charged if the Wave™ succeeds.
+            <p className="mt-8 text-xl leading-relaxed text-slate-400 max-w-xl mx-auto font-medium">
+              Join elite Waves™ and unlock institutional-grade pricing. <br />No subscriptions. Just raw collective force.
             </p>
-
-            {/* Example Case Box */}
-            <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-[2.5rem] max-w-xl mb-12 animate-in fade-in duration-1000 delay-400">
-              <div className="flex items-start space-x-4">
-                <div className="bg-indigo-500/20 p-3 rounded-2xl">
-                  <TrendingDown className="h-6 w-6 text-indigo-400" />
-                </div>
-                <div>
-                  <strong className="text-white uppercase tracking-widest text-[10px] block mb-2">Live Example Case</strong>
-                  <p className="text-slate-300 leading-relaxed text-sm">
-                    A premium tyre retailing at <span className="line-through text-slate-500">£90</span>. <br />
-                    Join a Wave™ and pay only <strong className="text-indigo-400 text-lg">£72</strong>. <br />
-                    <span className="text-xs text-slate-400 mt-2 block italic">Save £18 instantly when the collective threshold is met.</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-6 animate-in fade-in duration-1000 delay-500">
+            <div className="mt-12 flex items-center justify-center gap-x-8">
               <Link
-                to={user ? "/dashboard" : "/login"}
-                className="group w-full sm:w-auto inline-flex items-center justify-center px-12 py-6 text-lg font-black text-white transition-all duration-300 bg-indigo-600 rounded-full hover:bg-indigo-500 hover:shadow-[0_0_40px_rgba(79,70,229,0.4)] active:scale-95"
+                to="/login"
+                className="group relative px-12 py-5 bg-white text-slate-950 rounded-full font-black text-lg transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.2)]"
               >
-                JOIN THE COLLECTIVE™
-                <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                Enter the Collective
+                <div className="absolute inset-0 rounded-full bg-white animate-ping opacity-0 group-hover:opacity-10 transition-opacity"></div>
               </Link>
-              
-              <button 
-                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-                className="group text-slate-500 font-black text-xs uppercase tracking-widest hover:text-white transition-colors flex items-center"
-              >
-                View Protocol <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Protocol Section */}
-      <section id="how-it-works" className="py-32 relative border-y border-white/5">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
-            <div className="space-y-6">
-              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-indigo-400 border border-white/10">
-                <Target size={24} />
-              </div>
-              <h3 className="text-2xl font-black text-white tracking-tight uppercase">Select Asset</h3>
-              <p className="text-slate-500 leading-relaxed font-medium">
-                Browse our pre-authorized distributor templates. Tyres, Tech, and Industrial components ready for volume activation.
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-blue-400 border border-white/10">
-                <BarChart3 size={24} />
-              </div>
-              <h3 className="text-2xl font-black text-white tracking-tight uppercase">Activate Wave™</h3>
-              <p className="text-slate-500 leading-relaxed font-medium">
-                Commit your pre-authorization. Your funds are only locked once the collective threshold is reached. Absolute price integrity.
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-cyan-400 border border-white/10">
-                <Lock size={24} />
-              </div>
-              <h3 className="text-2xl font-black text-white tracking-tight uppercase">Blind Mediator</h3>
-              <p className="text-slate-500 leading-relaxed font-medium">
-                We handle the fulfillment bridge. Suppliers never see your data until the wave is secured. Total privacy by design.
-              </p>
-            </div>
+      {/* Waves List */}
+      <div className="max-w-7xl mx-auto px-6 py-24 sm:py-32">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+          <div>
+            <h2 className="text-4xl font-black text-white tracking-tight uppercase">Operational Waves™</h2>
+            <p className="text-slate-500 mt-4 text-lg font-medium">Real-time collective buying protocols currently active.</p>
           </div>
+          <div className="h-px flex-grow bg-white/5 mx-12 hidden md:block"></div>
         </div>
-      </section>
-
-      {/* Trust Banner */}
-      <section className="py-20 bg-slate-900/30">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center space-x-8 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700">
-            <span className="text-xl font-black tracking-tighter text-white">STRIPE_SECURED</span>
-            <span className="text-xl font-black tracking-tighter text-white">FIREBASE_REALTIME</span>
-            <span className="text-xl font-black tracking-tighter text-white">COLLECTIVE_POWER©</span>
+        
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="h-[500px] rounded-[3rem] bg-white/[0.02] animate-pulse border border-white/5"></div>
+            ))}
           </div>
-          <div className="mt-12">
-            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">
-              Licensed Operational Proxy for High-Performance Distribution
-            </p>
+        )}
+        
+        {error && (
+          <div className="text-center py-20 rounded-[3rem] bg-red-500/5 border border-red-500/10 text-red-500">
+            <p className="font-black text-xs uppercase tracking-widest">System Error: Protocol Retrieval Failed</p>
           </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-40 relative">
-        <div className="absolute inset-0 bg-indigo-600/5 mix-blend-overlay"></div>
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-8 tracking-tight uppercase">
-            Ready to initiate <br />
-            your first Wave™?
-          </h2>
-          <div className="flex flex-col items-center">
-            <Link
-              to="/login"
-              className="px-16 py-6 bg-white text-slate-950 rounded-full font-black text-lg hover:bg-slate-200 transition-all active:scale-95 shadow-[0_0_50px_rgba(255,255,255,0.1)]"
+        )}
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+          {waves?.map((wave: any) => (
+            <Link 
+              key={wave.waveId} 
+              to={`/wave/${wave.waveId}`}
+              className="group relative bg-white/[0.02] rounded-[3rem] border border-white/5 shadow-2xl hover:border-indigo-500/30 hover:-translate-y-4 transition-all duration-700 overflow-hidden flex flex-col h-full"
             >
-              ACCESS CONSOLE
+              {/* Product Visual Area */}
+              <div className="relative h-64 w-full overflow-hidden bg-slate-900">
+                <img 
+                  src={wave.productName.toLowerCase().includes('tyre') ? '/product-premium-tyre.jpg' : '/product-premium-tech.jpg'} 
+                  alt={wave.productName}
+                  className="w-full h-full object-cover mix-blend-luminosity opacity-50 group-hover:mix-blend-normal group-hover:opacity-80 transition-all duration-1000"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0b0c10] via-transparent to-transparent"></div>
+                
+                <div className="absolute top-6 left-6 flex space-x-2">
+                  <div className="px-3 py-1 bg-indigo-600 rounded-full shadow-[0_0_20px_rgba(79,70,229,0.4)]">
+                    <span className="text-[9px] font-black text-white uppercase tracking-widest">Active</span>
+                  </div>
+                </div>
+
+                <div className="absolute bottom-6 left-6">
+                  <div className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1 opacity-60">Entry Value</div>
+                  <div className="text-4xl font-black text-white tracking-tighter italic">£{wave.basePrice}</div>
+                </div>
+              </div>
+
+              <div className="p-10 flex flex-col flex-grow">
+                <div className="flex justify-between items-start mb-6">
+                  <h3 className="text-2xl font-black text-white tracking-tight leading-tight group-hover:text-indigo-400 transition-colors uppercase">
+                    {wave.productName}
+                  </h3>
+                </div>
+                
+                <p className="text-slate-500 mb-10 line-clamp-2 text-sm leading-relaxed font-medium italic">
+                  {wave.description}
+                </p>
+                
+                <div className="mt-auto space-y-8">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-end">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-2">Protocol engagement</span>
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-3.5 w-3.5 text-indigo-500" />
+                          <span className="text-sm font-black text-white">{wave.currentParticipants || 0} / {wave.threshold}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[9px] font-black text-indigo-400 uppercase tracking-widest border border-indigo-500/20 px-3 py-1 rounded-full">
+                          Collective Active™
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
+                      <div 
+                        className="bg-indigo-600 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(79,70,229,0.6)]" 
+                        style={{ width: `${Math.min(((wave.currentParticipants || 0) / wave.threshold) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                    <div className="flex items-center text-slate-600 text-[9px] font-black uppercase tracking-[0.2em]">
+                      <Clock className="h-3 w-3 mr-2 text-indigo-500" />
+                      {formatDistanceToNow(new Date(wave.deadline))} left
+                    </div>
+                    <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white group-hover:bg-indigo-600 group-hover:border-indigo-500 transition-all duration-500 group-hover:rotate-[360deg]">
+                      <ArrowRight className="h-4 w-4" />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </Link>
-            <div className="mt-8 flex items-center space-x-3 text-emerald-500/80 bg-emerald-500/5 px-6 py-3 rounded-full border border-emerald-500/10">
-              <ShieldAlert size={16} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Strict Privacy Policy© Active</span>
+          ))}
+          
+          {waves?.length === 0 && !loading && (
+            <div className="col-span-full text-center py-32 rounded-[3rem] bg-slate-50 border-2 border-dashed border-slate-200">
+              <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-slate-900">No active Waves™ right now</h3>
+              <p className="text-slate-500 mt-2">The next big opportunity is coming soon. Stay tuned!</p>
             </div>
-          </div>
+          )}
         </div>
-      </section>
+      </div>
     </div>
   );
 };

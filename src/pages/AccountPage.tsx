@@ -66,7 +66,7 @@ const AccountPage = () => {
         <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">
-              {isSupplier ? 'Supplier Profile©' : 'Your Account©'}
+              {isSupplier ? 'Supplier Profile™' : 'Your Account™'}
             </h1>
             <p className="text-slate-500 mt-2 font-medium">
               {isSupplier ? 'Corporate transparency and accountability records.' : 'Personal information and security settings.'}
@@ -92,12 +92,12 @@ const AccountPage = () => {
               </div>
               <h2 className="text-xl font-bold text-slate-900">{displayName}</h2>
               <p className="text-slate-400 text-sm font-medium mt-1">
-                {isSupplier ? 'Verified Distributor©' : 'Verified Member©'}
+                {isSupplier ? 'Verified Distributor™' : 'Verified Member™'}
               </p>
               
               <div className="mt-8 pt-8 border-t border-slate-50 flex items-center justify-center text-emerald-600 font-bold text-xs uppercase tracking-widest">
                 <ShieldCheck size={16} className="mr-2" /> 
-                {isSupplier ? 'Regulatory Clear©' : 'Identity Secured'}
+                {isSupplier ? 'Regulatory Clear™' : 'Identity Secured'}
               </div>
             </div>
           </div>
@@ -106,7 +106,7 @@ const AccountPage = () => {
           <div className="md:col-span-2 space-y-6">
             <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-100">
               <h3 className="text-lg font-bold text-slate-900 mb-8">
-                {isSupplier ? 'Accountability Data©' : 'Personal Information'}
+                {isSupplier ? 'Accountability Data™' : 'Personal Information'}
               </h3>
               
               {isSupplier && isEditing ? (
@@ -158,7 +158,7 @@ const AccountPage = () => {
                       className="flex-grow flex items-center justify-center space-x-2 bg-slate-900 text-white py-4 rounded-2xl font-bold hover:bg-slate-800 transition-all active:scale-95 shadow-xl"
                     >
                       <Save size={18} />
-                      <span>Sync Account©</span>
+                      <span>Sync Account™</span>
                     </button>
                     <button 
                       onClick={() => setIsEditing(false)}
@@ -257,7 +257,7 @@ const AccountPage = () => {
             </div>
 
             <div className="bg-indigo-50/50 border border-indigo-100 rounded-[2.5rem] p-8">
-              <h4 className="text-indigo-900 font-bold text-sm mb-2">Transparency & Accountability©</h4>
+              <h4 className="text-indigo-900 font-bold text-sm mb-2">Transparency & Accountability™</h4>
               <p className="text-indigo-700/70 text-xs leading-relaxed">
                 {isSupplier 
                   ? "As a registered distributor, your accountability data ensures member trust. All legal records are encrypted and only accessible for audit purposes."

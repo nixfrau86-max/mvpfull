@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
-import { LogOut, User } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { auth, db } from '../firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
 
 const Navbar = () => {
   const [user] = useAuthState(auth);
@@ -13,73 +13,69 @@ const Navbar = () => {
   useEffect(() => {
     const checkRole = async () => {
       if (user) {
-        // Check if supplier
         const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
-        const isSupp = supplierDoc.exists();
-        setIsSupplier(isSupp);
-
-        // For MVP: Check if admin (using email convention or could check 'admins' collection)
-        const isAdminUser = user.email === 'admin@collectivesavers.com';
-        setIsAdmin(isAdminUser);
+        setIsSupplier(supplierDoc.exists());
+        setIsAdmin(user.email === 'admin@collectivesavers.com');
+      } else {
+        setIsSupplier(false);
+        setIsAdmin(false);
       }
     };
     checkRole();
   }, [user]);
 
   return (
-    <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20">
+    <nav className="bg-[#0b0c10]/80 backdrop-blur-xl sticky top-0 z-50 border-b border-white/5">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex justify-between h-24">
           <div className="flex">
-            <Link to="/" className="flex-shrink-0 flex items-center space-x-3 group">
-              <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <img src="/Collectivesaverslogo.png.png" alt="The Collective Savers© Logo" className="w-10 h-10 object-contain" />
+            <Link to="/" className="flex-shrink-0 flex items-center space-x-4 group">
+              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:border-indigo-500/50 group-hover:bg-indigo-500/10 transition-all duration-500 group-hover:rotate-[15deg]">
+                <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain brightness-0 invert opacity-80 group-hover:opacity-100" />
               </div>
-              <span className="font-extrabold text-xl tracking-tight text-slate-900">
-                The Collective Savers<span className="text-indigo-600">©</span>
-              </span>
+              <div className="flex flex-col">
+                <span className="font-black text-xl tracking-tighter text-white uppercase leading-none">
+                  Savers<span className="text-indigo-500">™</span>
+                </span>
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Collective</span>
+              </div>
             </Link>
           </div>
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-10">
             {!isSupplier && (
-              <Link to="/" className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
-                Explore Waves™
+              <Link to="/" className="text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all">
+                Marketplace™
               </Link>
             )}
             {user ? (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-8">
                 {isAdmin ? (
-                  <Link to="/admin" className="text-slate-600 hover:text-rose-600 px-3 py-2 text-sm font-semibold transition-colors">
-                    Admin Console©
+                  <Link to="/admin" className="text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all">
+                    Admin
                   </Link>
                 ) : isSupplier ? (
-                  <Link to="/supplier" className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
-                    Supplier Portal©
+                  <Link to="/supplier" className="text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all">
+                    Supply
                   </Link>
                 ) : (
-                  <>
-                    <Link to="/dashboard" className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
-                      My Waves™
-                    </Link>
-                    <Link to="/account" className="flex items-center text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-semibold transition-colors">
-                      <User size={16} className="mr-1.5" /> Account
-                    </Link>
-                  </>
+                  <Link to="/dashboard" className="text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all">
+                    Console
+                  </Link>
                 )}
                 <button 
                   onClick={() => auth.signOut()}
-                  className="ml-4 flex items-center bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-slate-800 transition-all shadow-sm active:scale-95 cursor-pointer"
+                  className="ml-6 flex items-center bg-white text-slate-950 px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all shadow-xl active:scale-95 cursor-pointer"
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
+                  <LogOut className="h-3.5 w-3.5 mr-2" />
+                  Terminate
                 </button>
               </div>
             ) : (
               <Link 
                 to="/login"
-                className="bg-indigo-600 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 active:scale-95"
+                className="bg-indigo-600 text-white px-10 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-950/40 active:scale-95"
               >
-                Sign In
+                Access System
               </Link>
             )}
           </div>

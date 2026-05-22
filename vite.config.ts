@@ -8,25 +8,6 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('firebase')) {
-            return 'vendor-firebase';
-          }
-          if (id.includes('lucide-react')) {
-            return 'vendor-icons';
-          }
-          if (id.includes('node_modules')) {
-            return 'vendor-others';
-          }
-        }
-      }
-    },
-    chunkSizeWarningLimit: 1000,
-    cssCodeSplit: true,
-  },
   server: {
     host: '0.0.0.0',
     allowedHosts: true,

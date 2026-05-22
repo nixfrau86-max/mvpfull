@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { Clock, Users, Shield, TrendingDown, AlertCircle } from 'lucide-react';
+import { Clock, Shield, TrendingDown, Activity } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useEffect } from 'react';
+import WaveProgressVisualizer from '../components/WaveProgressVisualizer';
 
 const WaveDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,20 +16,6 @@ const WaveDetail = () => {
   const [error, setError] = useState('');
 
   const [wave] = useDocumentData(doc(db, 'waves', id || ''));
-
-  useEffect(() => {
-    const checkRole = async () => {
-      if (user) {
-        // Check if supplier
-        const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
-        if (supplierDoc.exists()) {
-          navigate('/supplier');
-          return;
-        }
-      }
-    };
-    checkRole();
-  }, [user, navigate]);
 
   const handleJoin = async () => {
     if (!user) {
@@ -75,77 +61,63 @@ const WaveDetail = () => {
   if (!wave) return <div className="text-center py-20">Loading...</div>;
 
   return (
-    <div className="bg-[#fcfcfd] min-h-screen py-16 sm:py-24">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="bg-white rounded-[3rem] shadow-2xl shadow-slate-200 overflow-hidden border border-slate-100">
+    <div className="bg-[#0b0c10] min-h-screen py-16 sm:py-24 text-slate-300">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="bg-white/[0.02] rounded-[4rem] shadow-2xl border border-white/[0.05] overflow-hidden backdrop-blur-3xl">
           <div className="lg:flex">
             {/* Left Column: Visuals & Info */}
-            <div className="lg:w-1/2 bg-slate-900 p-12 lg:p-20 relative overflow-hidden group">
-              {wave.imageUrl && (
-                <div className="absolute inset-0 z-0 opacity-40">
-                  <img src={wave.imageUrl} alt={wave.productName} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[3s]" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent"></div>
-                </div>
-              )}
-              <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-500 blur-[100px] rounded-full"></div>
-                <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-sky-500 blur-[100px] rounded-full"></div>
-              </div>
+            <div className="lg:w-3/5 relative overflow-hidden group min-h-[600px]">
+              <img 
+                src={wave.productName.toLowerCase().includes('tyre') ? '/product-premium-tyre.jpg' : '/product-premium-tech.jpg'} 
+                alt={wave.productName}
+                className="absolute inset-0 w-full h-full object-cover mix-blend-luminosity opacity-40 group-hover:mix-blend-normal group-hover:opacity-60 transition-all duration-1000"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#0b0c10] via-[#0b0c10]/80 to-transparent"></div>
               
-              <div className="relative z-10 h-full flex flex-col">
-                <div className="flex items-center space-x-3 mb-10">
-                  <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/10 text-indigo-300 text-[10px] font-black uppercase tracking-widest border border-white/10 w-fit">
-                    Live Opportunity©
-                  </div>
-                  {wave.sku && (
-                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/5 text-slate-400 text-[10px] font-black uppercase tracking-widest border border-white/5 w-fit">
-                      SKU: {wave.sku}
-                    </div>
-                  )}
+              <div className="relative z-10 h-full flex flex-col p-12 lg:p-20">
+                <div className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-500/10 text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em] border border-indigo-500/20 mb-12 w-fit backdrop-blur-md">
+                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 mr-2 shadow-[0_0_8px_#6366f1]"></span>
+                  Active Protocol™
                 </div>
                 
-                <h1 className="text-4xl lg:text-5xl font-black text-white mb-8 tracking-tight leading-tight">
+                <h1 className="text-5xl lg:text-7xl font-black text-white mb-10 tracking-tighter leading-[0.9]">
                   {wave.productName}
                 </h1>
                 
-                <p className="text-slate-400 text-lg mb-12 leading-relaxed font-medium">
+                <p className="text-slate-400 text-xl mb-16 leading-relaxed font-medium max-w-lg">
                   {wave.description}
                 </p>
+
+                <div className="mb-16 max-w-xl">
+                  <WaveProgressVisualizer 
+                    current={wave.currentParticipants || 0} 
+                    target={wave.threshold} 
+                    status={wave.status} 
+                  />
+                </div>
                 
-                <div className="mt-auto space-y-8">
+                <div className="mt-auto grid grid-cols-1 md:grid-cols-2 gap-12">
                   <div className="flex items-center group/item">
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mr-6 group-hover/item:bg-indigo-600 transition-colors">
-                      <Users className="h-6 w-6 text-indigo-400 group-hover/item:text-white" />
+                    <div className="w-14 h-14 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mr-6 group-hover/item:border-emerald-500/50 transition-all">
+                      <Activity className="h-6 w-6 text-emerald-400" />
                     </div>
                     <div>
-                      <div className="text-white font-black text-xl tracking-tight">
-                        {wave.currentParticipants || 0} / {wave.threshold}
+                      <div className="text-white font-black text-2xl tracking-tighter italic uppercase">
+                        Protocol Linked
                       </div>
-                      <div className="text-slate-500 text-xs font-bold uppercase tracking-widest">Participants joined</div>
+                      <div className="text-slate-500 text-[9px] font-black uppercase tracking-widest">System Integrated</div>
                     </div>
                   </div>
                   
                   <div className="flex items-center group/item">
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mr-6 group-hover/item:bg-sky-600 transition-colors">
-                      <Clock className="h-6 w-6 text-sky-400 group-hover/item:text-white" />
+                    <div className="w-14 h-14 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mr-6 group-hover/item:border-sky-500/50 transition-all">
+                      <Clock className="h-6 w-6 text-sky-400" />
                     </div>
                     <div>
-                      <div className="text-white font-black text-xl tracking-tight">
-                        {formatDistanceToNow(new Date(wave.deadline))} left
+                      <div className="text-white font-black text-2xl tracking-tighter italic uppercase">
+                        {formatDistanceToNow(new Date(wave.deadline))}
                       </div>
-                      <div className="text-slate-500 text-xs font-bold uppercase tracking-widest">Wave™ window closing</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center group/item">
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mr-6 group-hover/item:bg-emerald-600 transition-colors">
-                      <Shield className="h-6 w-6 text-emerald-400 group-hover/item:text-white" />
-                    </div>
-                    <div>
-                      <div className="text-white font-black text-xl tracking-tight">
-                        Secured Pre-Auth©
-                      </div>
-                      <div className="text-slate-500 text-xs font-bold uppercase tracking-widest">No charge unless successful</div>
+                      <div className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Temporal Window Open</div>
                     </div>
                   </div>
                 </div>
@@ -153,76 +125,65 @@ const WaveDetail = () => {
             </div>
             
             {/* Right Column: Checkout & Action */}
-            <div className="lg:w-1/2 p-12 lg:p-20 flex flex-col justify-center">
-              <div className="mb-12">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 block">Exclusive Member Price©</span>
-                <div className="flex items-baseline space-x-4">
-                  <span className="text-7xl font-black text-slate-900 tracking-tighter italic">£{wave.basePrice}</span>
-                  <div className="px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-xl font-black text-sm border border-emerald-100 flex items-center">
+            <div className="lg:w-2/5 p-12 lg:p-20 bg-white/[0.01] flex flex-col justify-center border-l border-white/[0.05]">
+              <div className="mb-16">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-6 block">Net Acquisition Value™</span>
+                <div className="flex items-baseline space-x-6">
+                  <span className="text-8xl font-black text-white tracking-tighter italic">£{wave.basePrice}</span>
+                  <div className="px-4 py-2 bg-emerald-500/10 text-emerald-400 rounded-2xl font-black text-xs border border-emerald-500/20 flex items-center shadow-[0_0_20px_rgba(16,185,129,0.1)]">
                     <TrendingDown className="h-4 w-4 mr-2" />
-                    SAVE £{Math.round(wave.basePrice * 0.2)}
+                    SAVE 20%
                   </div>
                 </div>
-                <p className="mt-4 text-slate-500 font-medium leading-relaxed">
-                  Join the collective power of our members to unlock this exclusive bulk price. No individual can match this rate.
+                <p className="mt-8 text-slate-500 font-medium leading-relaxed italic">
+                  Institutional pricing unlocked via collective equilibrium. Protocol secured by multi-layer encryption.
                 </p>
               </div>
 
               {wave.discountTiers && wave.discountTiers.length > 0 && (
-                <div className="mb-12">
-                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-6">Tiered Savings Progression©</h3>
-                  <div className="grid gap-4">
+                <div className="mb-16">
+                  <h3 className="text-[10px] font-black text-white uppercase tracking-[0.3em] mb-8 opacity-40">Tiered Progression Matrix™</h3>
+                  <div className="grid gap-6">
                     {wave.discountTiers.map((tier: any, index: number) => (
-                      <div key={index} className="flex justify-between items-center p-5 bg-slate-50 rounded-2xl border border-slate-100 group hover:border-indigo-200 transition-colors">
+                      <div key={index} className="flex justify-between items-center p-6 bg-white/5 rounded-3xl border border-white/5 group hover:border-indigo-500/30 transition-all">
                         <div className="flex items-center">
-                          <div className="w-2 h-2 rounded-full bg-indigo-600 mr-4"></div>
-                          <span className="text-sm font-bold text-slate-600">{tier.participants}+ Participants</span>
+                          <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-4 shadow-[0_0_8px_#6366f1]"></div>
+                          <span className="text-sm font-black text-slate-400 uppercase tracking-widest">{tier.participants}+ Nodes</span>
                         </div>
-                        <span className="font-black text-indigo-600">£{tier.price}</span>
+                        <span className="font-black text-xl text-white italic">£{tier.price}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {error && (
-                <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center text-red-600 text-sm font-bold">
-                  <AlertCircle className="h-5 w-5 mr-3 shrink-0" />
-                  {error}
-                </div>
-              )}
-
-              <div className="space-y-6">
+              <div className="space-y-10">
+                {error && (
+                  <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-[2rem] text-red-500 text-[10px] font-black uppercase tracking-[0.2em] text-center">
+                    {error}
+                  </div>
+                )}
                 <button
                   onClick={handleJoin}
                   disabled={loading || wave.status !== 'active'}
-                  className={`w-full py-6 rounded-full font-black text-xl shadow-2xl transition-all duration-300 transform hover:-translate-y-1 active:scale-95 uppercase tracking-widest ${
+                  className={`group relative w-full py-8 rounded-full font-black text-xs uppercase tracking-[0.3em] transition-all duration-500 overflow-hidden shadow-2xl active:scale-95 ${
                     wave.status === 'active' 
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-500/30' 
-                      : wave.status === 'locking'
-                      ? 'bg-amber-500 text-white cursor-not-allowed'
-                      : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      ? 'bg-white text-slate-950 hover:bg-indigo-600 hover:text-white' 
+                      : 'bg-white/5 text-slate-600 border border-white/5 cursor-not-allowed'
                   }`}
                 >
-                  {loading ? (
-                    <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Authenticating...
-                    </span>
-                  ) : (
-                    wave.status === 'active' ? 'Commit to Wave™' : wave.status === 'locking' ? 'Locking Wave™...' : 'Wave™ Inactive'
-                  )}
+                  <span className="relative z-10">
+                    {loading ? 'Authenticating Protocol...' : wave.status === 'active' ? 'Commit to Protocol™' : 'Protocol Inactive'}
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </button>
                 
                 <div className="flex flex-col items-center">
-                  <div className="flex items-center text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
-                    <Shield className="h-3 w-3 mr-2" /> 100% Secured by Stripe
+                  <div className="flex items-center text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-4">
+                    <Shield className="h-3 w-3 mr-2 text-indigo-500" /> Layer-3 Secure Encryption
                   </div>
-                  <p className="text-center text-[10px] leading-relaxed text-slate-400 max-w-xs font-medium">
-                    By committing, you authorize a £{wave.basePrice} hold. Zero funds leave your account until the Wave™ successfully locks with {wave.threshold} members.
+                  <p className="text-center text-[9px] leading-relaxed text-slate-600 max-w-xs font-bold uppercase tracking-tighter">
+                    Pre-authorization hold: £{wave.basePrice}. No liquidity migration until threshold equilibrium achieved.
                   </p>
                 </div>
               </div>

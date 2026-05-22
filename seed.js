@@ -21,7 +21,7 @@ const seedData = async () => {
   // 1. Create a Supplier
   await setDoc(doc(db, "suppliers", demoSupplierId), {
     supplierId: demoSupplierId,
-    companyName: "Premium Auto & Tech Distributors©",
+    companyName: "Premium Auto & Tech Distributors™",
     email: "supply@premiumdistro.com",
     stripeConnectAccountId: "acct_demo_123",
     performanceBondPaid: true,
@@ -60,7 +60,7 @@ const seedData = async () => {
     const docRef = await addDoc(collection(db, "products"), {
       ...p,
       supplierId: demoSupplierId,
-      supplierName: "Premium Auto & Tech Distributors©",
+      supplierName: "Premium Auto & Tech Distributors™",
       isAvailable: true,
       createdAt: new Date().toISOString()
     });

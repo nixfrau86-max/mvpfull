@@ -39,7 +39,7 @@ const AdminLoginPage = () => {
           </div>
           
           <h2 className="text-3xl font-black text-white tracking-tight uppercase">
-            Terminal Access©
+            Terminal Access™
           </h2>
           <p className="mt-4 text-slate-400 font-bold text-xs uppercase tracking-widest">
             High-Privilege Collective Management

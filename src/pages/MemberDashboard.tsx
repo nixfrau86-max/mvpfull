@@ -1,91 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query, where, doc, getDoc, updateDoc, limit, orderBy, addDoc, setDoc } from 'firebase/firestore';
+import { collection, query, where, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { Link, useNavigate } from 'react-router-dom';
-import { Package, Clock, CheckCircle, ExternalLink, Users, AlertCircle, ShoppingBag, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CheckCircle, ExternalLink, Users, AlertCircle, Zap, Shield } from 'lucide-react';
+import WaveProgressVisualizer from '../components/WaveProgressVisualizer';
 
 const MemberDashboard = () => {
   const [user] = useAuthState(auth);
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'my-waves' | 'start-wave'>('my-waves');
   const [showAddressForm, setShowAddressForm] = useState<string | null>(null);
   const [address, setAddress] = useState({ street: '', city: '', postcode: '', country: 'UK' });
-  const [startingWave, setStartingWave] = useState<string | null>(null);
 
-  // Query waves user has joined - Limit to recent 10 for performance
-  const joinedWavesQuery = user ? query(
-    collection(db, 'waveMembers'), 
-    where('userId', '==', user.uid),
-    orderBy('joinedAt', 'desc'),
-    limit(10)
-  ) : null;
+  // Query waves user has joined
+  const joinedWavesQuery = user ? query(collection(db, 'waveMembers'), where('userId', '==', user.uid)) : null;
   const [joinedMemberships, loadingMemberships] = useCollectionData(joinedWavesQuery);
 
-  // Query available products
-  const productsQuery = query(collection(db, 'products'), where('isAvailable', '==', true), limit(20));
-  const [availableProducts, loadingProducts] = useCollectionData(productsQuery);
-
-  useEffect(() => {
-    const checkRole = async () => {
-      if (user) {
-        // Check if supplier
-        const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
-        if (supplierDoc.exists()) {
-          navigate('/supplier');
-          return;
-        }
-      }
-    };
-    checkRole();
-  }, [user, navigate]);
-
-  // Query orders for user - Limit to recent 5 for performance
-  const ordersQuery = user ? query(
-    collection(db, 'orders'), 
-    where('userId', '==', user.uid),
-    orderBy('createdAt', 'desc'),
-    limit(5)
-  ) : null;
+  // Query orders for user
+  const ordersQuery = user ? query(collection(db, 'orders'), where('userId', '==', user.uid)) : null;
   const [orders, loadingOrders] = useCollectionData(ordersQuery);
-
-  const handleStartWave = async (product: any) => {
-    if (!user) return;
-    setStartingWave(product.productId);
-    try {
-      // Create a 7-day deadline by default
-      const deadline = new Date();
-      deadline.setDate(deadline.getDate() + 7);
-
-      const waveData = {
-        supplierId: product.supplierId,
-        productName: product.name,
-        description: product.description,
-        basePrice: product.price,
-        threshold: product.minThreshold,
-        deadline: deadline.toISOString(),
-        status: 'active',
-        currentParticipants: 0,
-        createdAt: new Date().toISOString(),
-        createdBy: user.uid,
-        discountTiers: [],
-        imageUrl: product.imageUrl || '',
-        sku: product.sku || ''
-      };
-
-      const docRef = await addDoc(collection(db, 'waves'), waveData);
-      await setDoc(doc(db, 'waves', docRef.id), { ...waveData, waveId: docRef.id });
-      
-      // Navigate to the newly created wave detail
-      navigate(`/wave/${docRef.id}`);
-    } catch (err) {
-      console.error(err);
-      alert('Failed to start wave');
-    } finally {
-      setStartingWave(null);
-    }
-  };
 
   const handleSubmitAddress = async (e: React.FormEvent, orderId: string) => {
     e.preventDefault();
@@ -103,281 +36,209 @@ const MemberDashboard = () => {
   };
 
   return (
-    <div className="bg-[#fcfcfd] min-h-screen pb-20">
+    <div className="bg-[#0b0c10] min-h-screen pb-20 text-slate-300">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <header className="mb-12">
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">Member Dashboard©</h1>
-          <p className="text-slate-500 mt-2 font-medium">Manage your active Wave™ participations and order history.</p>
+        <header className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <div className="flex items-center space-x-2 text-indigo-500 mb-3">
+              <div className="p-1.5 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
+                <Zap className="h-4 w-4 fill-current" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em]">Operational Interface</span>
+            </div>
+            <h1 className="text-6xl font-black text-white tracking-tighter leading-none">Member Console™</h1>
+            <p className="text-slate-500 mt-4 font-medium text-lg">Managing active collective power protocols.</p>
+          </div>
+          <div className="text-right">
+            <div className="inline-block p-6 bg-white/[0.03] border border-white/[0.05] rounded-[2rem] backdrop-blur-md">
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1 text-left">Identity Verified</div>
+              <div className="text-sm font-bold text-white text-left flex items-center">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 mr-2 shadow-[0_0_8px_#10b981]"></div>
+                {user?.email}
+              </div>
+            </div>
+          </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Main Content */}
-          <div className="lg:col-span-8 space-y-10">
+          <div className="lg:col-span-8 space-y-16">
             
-            {/* Tab Navigation */}
-            <div className="flex space-x-1 bg-slate-100 p-1 rounded-2xl w-fit mb-8">
-              <button
-                onClick={() => setActiveTab('my-waves')}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                  activeTab === 'my-waves' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                <Clock className="h-4 w-4" />
-                <span>My Participations™</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('start-wave')}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                  activeTab === 'start-wave' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                <ShoppingBag className="h-4 w-4" />
-                <span>Start a Wave™</span>
-              </button>
-            </div>
-
-            {activeTab === 'my-waves' ? (
-              <>
-                {/* Notifications / Actions Needed */}
-                {orders?.filter(o => !o.addressProvided).map(order => (
-                  <div key={order.orderId} className="bg-white border border-amber-200 p-6 rounded-[2rem] shadow-xl shadow-amber-500/5 flex items-start relative overflow-hidden group">
-                    <div className="absolute top-0 left-0 w-2 h-full bg-amber-400"></div>
-                    <div className="bg-amber-100 p-3 rounded-2xl mr-5">
-                      <AlertCircle className="h-6 w-6 text-amber-600" />
-                    </div>
-                    <div className="flex-grow">
-                      <h3 className="text-slate-900 font-extrabold text-lg">Shipping Address Required</h3>
-                      <p className="text-slate-500 text-sm mt-1 mb-5 leading-relaxed">
-                        Great news! Your Wave™ for <strong>Order #{order.orderId.slice(-6)}</strong> has succeeded. We need your delivery address to finalize the shipment.
-                      </p>
-                      <button 
-                        onClick={() => setShowAddressForm(order.orderId)}
-                        className="bg-slate-900 text-white px-8 py-3 rounded-full text-sm font-bold hover:bg-slate-800 transition-all shadow-lg active:scale-95"
-                      >
-                        Set Delivery Address
-                      </button>
-                    </div>
+            {/* Notifications / Actions Needed */}
+            {orders?.filter(o => !o.addressProvided).map(order => (
+              <div key={order.orderId} className="relative group overflow-hidden bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/30 p-10 rounded-[3rem] backdrop-blur-2xl">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[80px] rounded-full -mr-32 -mt-32 group-hover:bg-amber-500/20 transition-all duration-1000"></div>
+                <div className="flex flex-col md:flex-row items-start md:items-center">
+                  <div className="bg-amber-500/20 p-5 rounded-3xl mr-8 border border-amber-500/30 mb-6 md:mb-0 shadow-[0_0_30px_rgba(245,158,11,0.1)]">
+                    <AlertCircle className="h-8 w-8 text-amber-500" />
                   </div>
+                  <div className="flex-grow">
+                    <h3 className="text-white font-black text-2xl mb-2 tracking-tight">Fulfillment Credentials Required</h3>
+                    <p className="text-slate-400 text-sm mb-8 leading-relaxed max-w-md">
+                      Protocol successful for <strong>Order #{order.orderId.slice(-8).toUpperCase()}</strong>. Finalize destination coordinates to initiate physical delivery.
+                    </p>
+                    <button 
+                      onClick={() => setShowAddressForm(order.orderId)}
+                      className="bg-amber-500 text-black px-10 py-4 rounded-full text-xs font-black uppercase tracking-[0.2em] hover:bg-amber-400 transition-all shadow-[0_10px_40px_rgba(245,158,11,0.2)] active:scale-95"
+                    >
+                      Input Coordinates
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <section>
+              <div className="flex items-center space-x-6 mb-10">
+                <h2 className="text-xs font-black text-white tracking-[0.4em] uppercase opacity-40">Active Transmissions™</h2>
+                <div className="h-px flex-grow bg-white/10"></div>
+              </div>
+              
+              {loadingMemberships && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  {[1, 2].map(i => <div key={i} className="h-80 bg-white/[0.02] animate-pulse rounded-[3rem] border border-white/[0.05]"></div>)}
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                {joinedMemberships?.map((membership: any) => (
+                  <JoinedWaveCard key={membership.id} waveId={membership.waveId} />
                 ))}
-
-                <section>
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-slate-900 flex items-center">
-                      <Clock className="mr-3 h-6 w-6 text-indigo-600" /> Active Participations™
-                    </h2>
-                    <div className="h-px flex-grow bg-slate-100 ml-6"></div>
-                  </div>
-                  
-                  {loadingMemberships && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {[1, 2].map(i => <div key={i} className="h-40 bg-slate-100 animate-pulse rounded-3xl"></div>)}
+                
+                {joinedMemberships?.length === 0 && !loadingMemberships && (
+                  <div className="col-span-full bg-white/[0.02] p-20 rounded-[4rem] border border-white/[0.05] border-dashed text-center">
+                    <div className="w-24 h-24 bg-slate-900 rounded-[2rem] flex items-center justify-center mx-auto mb-8 text-slate-700 border border-white/5 shadow-inner">
+                      <Zap className="h-10 w-10" />
                     </div>
-                  )}
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {joinedMemberships?.map((membership: any) => (
-                      <JoinedWaveCard key={membership.id} waveId={membership.waveId} />
-                    ))}
-                    
-                    {joinedMemberships?.length === 0 && !loadingMemberships && (
-                      <div className="col-span-full bg-white p-12 rounded-[2.5rem] border-2 border-dashed border-slate-200 text-center">
-                        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-300">
-                          <Users className="h-8 w-8" />
-                        </div>
-                        <h3 className="text-lg font-bold text-slate-900">No active Waves™ joined</h3>
-                        <p className="text-slate-500 mt-2 mb-6">Ready to start saving? Discover collective buying opportunities.</p>
-                        <Link to="/" className="inline-flex items-center text-indigo-600 font-bold hover:text-indigo-700">
-                          Explore Waves™ <ExternalLink className="ml-2 h-4 w-4" />
-                        </Link>
-                      </div>
-                    )}
+                    <h3 className="text-2xl font-black text-white mb-4 tracking-tight">No Active Protocols Found</h3>
+                    <p className="text-slate-500 mb-10 max-w-xs mx-auto font-medium">Your current collective capacity is idle. Scan the marketplace to engage.</p>
+                    <Link to="/" className="inline-flex items-center px-10 py-5 bg-indigo-600 text-white rounded-full text-xs font-black uppercase tracking-[0.2em] hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-950/40">
+                      Explore Market™ <ExternalLink className="ml-3 h-4 w-4" />
+                    </Link>
                   </div>
-                </section>
+                )}
+              </div>
+            </section>
 
-                <section>
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-slate-900 flex items-center">
-                      <Package className="mr-3 h-6 w-6 text-indigo-600" /> Order History
-                    </h2>
-                    <div className="h-px flex-grow bg-slate-100 ml-6"></div>
-                  </div>
+            <section>
+              <div className="flex items-center space-x-6 mb-10">
+                <h2 className="text-xs font-black text-white tracking-[0.4em] uppercase opacity-40">Protocol Archive</h2>
+                <div className="h-px flex-grow bg-white/10"></div>
+              </div>
 
-                  {loadingOrders && <div className="h-64 bg-slate-100 animate-pulse rounded-3xl"></div>}
+              {loadingOrders && <div className="h-64 bg-white/[0.02] animate-pulse rounded-[3rem] border border-white/[0.05]"></div>}
 
-                  <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full">
-                        <thead>
-                          <tr className="bg-slate-50 border-b border-slate-100">
-                            <th className="px-8 py-5 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Reference</th>
-                            <th className="px-8 py-5 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Status</th>
-                            <th className="px-8 py-5 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Total</th>
-                            <th className="px-8 py-5 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Fulfillment</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                          {orders?.map((order: any) => (
-                            <tr key={order.orderId} className="hover:bg-slate-50/50 transition-colors">
-                              <td className="px-8 py-6 whitespace-nowrap text-sm font-bold text-slate-900">
-                                #{order.orderId.slice(-6).toUpperCase()}
-                              </td>
-                              <td className="px-8 py-6 whitespace-nowrap">
-                                <span className={`px-4 py-1.5 inline-flex text-xs leading-5 font-black rounded-full uppercase tracking-tighter ${
-                                  order.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : 
-                                  order.status === 'shipped' ? 'bg-sky-50 text-sky-700' : 
-                                  'bg-slate-100 text-slate-600'
-                                }`}>
-                                  {order.status}
-                                </span>
-                              </td>
-                              <td className="px-8 py-6 whitespace-nowrap text-sm font-bold text-slate-900">
-                                £{order.totalAmount}
-                              </td>
-                              <td className="px-8 py-6 whitespace-nowrap text-sm text-slate-500">
-                                {order.addressProvided ? (
-                                  <span className="flex items-center text-emerald-600 font-bold text-xs uppercase">
-                                    <CheckCircle className="h-3.5 w-3.5 mr-2" /> Address Ready
-                                  </span>
-                                ) : (
-                                  <button 
-                                    onClick={() => setShowAddressForm(order.orderId)}
-                                    className="text-amber-600 font-bold text-xs uppercase hover:underline"
-                                  >
-                                    Action Needed
-                                  </button>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                          
-                          {orders?.length === 0 && !loadingOrders && (
-                            <tr>
-                              <td colSpan={4} className="px-8 py-16 text-center text-slate-400 text-sm font-medium">
-                                Your successful Wave™ orders will appear here.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </section>
-              </>
-            ) : (
-              /* Start Wave Product Listing */
-              <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl font-bold text-slate-900 flex items-center">
-                    <ShoppingBag className="mr-3 h-6 w-6 text-indigo-600" /> Distributor Templates©
-                  </h2>
-                  <div className="h-px flex-grow bg-slate-100 ml-6"></div>
+              <div className="bg-white/[0.02] rounded-[3rem] border border-white/[0.05] overflow-hidden backdrop-blur-sm">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-white/[0.05]">
+                        <th className="px-10 py-8 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Hash / UID</th>
+                        <th className="px-10 py-8 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Status Protocol</th>
+                        <th className="px-10 py-8 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Capital Value</th>
+                        <th className="px-10 py-8 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Destination</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.03]">
+                      {orders?.map((order: any) => (
+                        <tr key={order.orderId} className="hover:bg-white/[0.02] transition-colors group">
+                          <td className="px-10 py-10 whitespace-nowrap">
+                            <div className="text-sm font-black text-white tracking-widest uppercase">
+                              #{order.orderId.slice(-10).toUpperCase()}
+                            </div>
+                            <div className="text-[9px] font-bold text-slate-600 mt-1">ISSUED: {new Date().toLocaleDateString()}</div>
+                          </td>
+                          <td className="px-10 py-10 whitespace-nowrap">
+                            <span className={`px-5 py-2 inline-flex text-[9px] font-black rounded-full uppercase tracking-[0.2em] border ${
+                              order.status === 'paid' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
+                              order.status === 'shipped' ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' : 
+                              'bg-white/5 text-slate-400 border-white/10'
+                            }`}>
+                              {order.status}
+                            </span>
+                          </td>
+                          <td className="px-10 py-10 whitespace-nowrap">
+                            <div className="text-lg font-black text-white">£{order.totalAmount}</div>
+                            <div className="text-[9px] font-bold text-slate-600">GBP NET</div>
+                          </td>
+                          <td className="px-10 py-10 whitespace-nowrap">
+                            {order.addressProvided ? (
+                              <div className="flex items-center text-emerald-500/80 font-black text-[10px] uppercase tracking-widest">
+                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2 shadow-[0_0_6px_#10b981]"></div>
+                                Encrypted Location
+                              </div>
+                            ) : (
+                              <button 
+                                onClick={() => setShowAddressForm(order.orderId)}
+                                className="text-amber-500 font-black text-[10px] uppercase tracking-widest hover:text-amber-400 underline underline-offset-8"
+                              >
+                                Input Destination
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-
-                <p className="text-slate-500 mb-10 font-medium">
-                  Choose a product below to launch a new Wave™. Once you launch, other members can join until the threshold is reached.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {availableProducts?.map((product: any) => (
-                    <div key={product.productId} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col h-full hover:shadow-xl transition-all overflow-hidden group">
-                      {product.imageUrl && (
-                        <div className="h-48 -mx-8 -mt-8 mb-6 overflow-hidden">
-                          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                        </div>
-                      )}
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="font-bold text-xl text-slate-900">{product.name}</h3>
-                          {product.sku && <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">SKU: {product.sku}</p>}
-                        </div>
-                        <span className="text-indigo-600 font-black">£{product.price}</span>
-                      </div>
-                      <p className="text-slate-500 text-sm mb-8 line-clamp-2">{product.description}</p>
-                      
-                      <div className="mt-auto space-y-6">
-                        <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
-                          <span>Min. Threshold</span>
-                          <span className="text-slate-900">{product.minThreshold} Members</span>
-                        </div>
-                        
-                        <button
-                          onClick={() => handleStartWave(product)}
-                          disabled={startingWave === product.productId}
-                          className="w-full bg-indigo-600 text-white py-4 rounded-full font-black text-xs uppercase tracking-widest hover:bg-indigo-500 transition-all flex items-center justify-center group"
-                        >
-                          {startingWave === product.productId ? (
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          ) : (
-                            <>
-                              <Plus className="w-4 h-4 mr-2 group-hover:rotate-90 transition-transform" />
-                              Launch Wave™
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-
-                  {availableProducts?.length === 0 && !loadingProducts && (
-                    <div className="col-span-full py-20 text-center bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
-                      <ShoppingBag className="h-10 w-10 text-slate-300 mx-auto mb-4" />
-                      <h4 className="font-bold text-slate-900">No product templates available</h4>
-                      <p className="text-slate-500 text-sm mt-2">Check back later for new opportunities from our distributors.</p>
-                    </div>
-                  )}
-                </div>
-              </section>
-            )}
+              </div>
+            </section>
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-4 space-y-8">
-            <div className="bg-indigo-600 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-indigo-200 relative overflow-hidden group">
-              <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full group-hover:scale-110 transition-transform duration-700"></div>
-              <h3 className="text-xl font-bold mb-8 relative">Account Insight</h3>
-              <div className="space-y-6 relative">
-                <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                  <span className="text-white/70 font-medium">Participations™</span>
-                  <span className="font-black text-2xl">{joinedMemberships?.length || 0}</span>
+          <div className="lg:col-span-4 space-y-12">
+            <div className="relative group overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 rounded-[3.5rem] p-12 text-white shadow-2xl shadow-indigo-950/40">
+              <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-1000"></div>
+              <div className="absolute top-0 left-0 w-full h-full opacity-10" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+              
+              <h3 className="text-xl font-black mb-12 relative uppercase tracking-widest">Operational Intel™</h3>
+              
+              <div className="space-y-10 relative">
+                <div className="flex justify-between items-end border-b border-white/10 pb-8">
+                  <div className="flex flex-col">
+                    <span className="text-white/50 text-[9px] font-black uppercase tracking-[0.3em] mb-2">Protocols Joined</span>
+                    <span className="font-black text-5xl leading-none tracking-tighter">{joinedMemberships?.length || 0}</span>
+                  </div>
+                  <Zap className="h-8 w-8 text-white/20" />
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-white/70 font-medium">Successful Waves™</span>
-                  <span className="font-black text-2xl">{orders?.length || 0}</span>
+                <div className="flex justify-between items-end">
+                  <div className="flex flex-col">
+                    <span className="text-white/50 text-[9px] font-black uppercase tracking-[0.3em] mb-2">Successful Locks</span>
+                    <span className="font-black text-5xl leading-none tracking-tighter">{orders?.length || 0}</span>
+                  </div>
+                  <CheckCircle className="h-8 w-8 text-white/20" />
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-100">
-              <h3 className="text-xl font-bold text-slate-900 mb-8">The Process©</h3>
-              <ul className="space-y-8">
-                <li className="flex group">
-                  <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold mr-4 shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                    1
-                  </div>
+            <div className="bg-white/[0.03] rounded-[3.5rem] p-12 border border-white/[0.05] backdrop-blur-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-5">
+                <Shield className="h-32 w-32" />
+              </div>
+              <h3 className="text-xl font-black text-white mb-10 uppercase tracking-widest">The Directive™</h3>
+              <div className="space-y-12">
+                <div className="flex space-x-6 group">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-indigo-600/10 border border-indigo-600/20 flex items-center justify-center text-indigo-500 font-black text-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">01</div>
                   <div>
-                    <h4 className="font-bold text-slate-900 text-sm mb-1 uppercase tracking-tight">Reserve</h4>
-                    <p className="text-slate-500 text-xs leading-relaxed">Join a Wave™. Your card is pre-authorized but no funds are moved yet.</p>
+                    <h4 className="text-white font-black text-[10px] uppercase tracking-[0.3em] mb-3">Initiation</h4>
+                    <p className="text-slate-500 text-xs leading-relaxed font-medium">Join a Wave™ protocol. Your liquidity is pre-authorized via encrypted channels.</p>
                   </div>
-                </li>
-                <li className="flex group">
-                  <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold mr-4 shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                    2
-                  </div>
+                </div>
+                <div className="flex space-x-6 group">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-sky-600/10 border border-sky-600/20 flex items-center justify-center text-sky-500 font-black text-sm group-hover:bg-sky-600 group-hover:text-white transition-all">02</div>
                   <div>
-                    <h4 className="font-bold text-slate-900 text-sm mb-1 uppercase tracking-tight">Lock</h4>
-                    <p className="text-slate-500 text-xs leading-relaxed">Threshold reached! The Wave™ locks and we process payments at the final bulk price.</p>
+                    <h4 className="text-white font-black text-[10px] uppercase tracking-[0.3em] mb-3">Equilibrium</h4>
+                    <p className="text-slate-500 text-xs leading-relaxed font-medium">When threshold equilibrium is achieved, the collective price is finalized.</p>
                   </div>
-                </li>
-                <li className="flex group">
-                  <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold mr-4 shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                    3
-                  </div>
+                </div>
+                <div className="flex space-x-6 group">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-emerald-600/10 border border-emerald-600/20 flex items-center justify-center text-emerald-500 font-black text-sm group-hover:bg-emerald-600 group-hover:text-white transition-all">03</div>
                   <div>
-                    <h4 className="font-bold text-slate-900 text-sm mb-1 uppercase tracking-tight">Fulfill</h4>
-                    <p className="text-slate-500 text-xs leading-relaxed">The supplier prepares your shipment. You'll receive tracking details immediately.</p>
+                    <h4 className="text-white font-black text-[10px] uppercase tracking-[0.3em] mb-3">Manifest</h4>
+                    <p className="text-slate-500 text-xs leading-relaxed font-medium">Asset distribution initiates. Real-time tracking telemetry will be broadcast.</p>
                   </div>
-                </li>
-              </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -385,55 +246,58 @@ const MemberDashboard = () => {
 
       {/* Address Modal */}
       {showAddressForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl">
-            <h2 className="text-2xl font-bold mb-6">Delivery Address</h2>
-            <form onSubmit={(e) => handleSubmitAddress(e, showAddressForm)} className="space-y-4">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-6 z-[100]">
+          <div className="bg-slate-900 border border-white/10 rounded-[3rem] max-w-xl w-full p-12 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-amber-500"></div>
+            <h2 className="text-3xl font-black text-white mb-2 tracking-tight">Fulfillment Destination</h2>
+            <p className="text-slate-500 text-sm mb-10 font-medium tracking-tight uppercase">Order Hash #{showAddressForm.slice(-12).toUpperCase()}</p>
+            
+            <form onSubmit={(e) => handleSubmitAddress(e, showAddressForm)} className="space-y-8">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Street Address</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-4">Street / Building Address</label>
                 <input
                   type="text"
                   required
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-5 text-white font-bold focus:ring-2 focus:ring-amber-500 transition-all outline-none"
                   value={address.street}
                   onChange={(e) => setAddress({ ...address, street: e.target.value })}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">City</label>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-4">City / Sector</label>
                   <input
                     type="text"
                     required
-                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-5 text-white font-bold focus:ring-2 focus:ring-amber-500 transition-all outline-none"
                     value={address.city}
                     onChange={(e) => setAddress({ ...address, city: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Postcode</label>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-4">Postcode / ZIP</label>
                   <input
                     type="text"
                     required
-                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-5 text-white font-bold focus:ring-2 focus:ring-amber-500 transition-all outline-none"
                     value={address.postcode}
                     onChange={(e) => setAddress({ ...address, postcode: e.target.value })}
                   />
                 </div>
               </div>
-              <div className="flex justify-end space-x-3 pt-6">
+              <div className="flex items-center justify-end space-x-8 pt-8">
                 <button
                   type="button"
                   onClick={() => setShowAddressForm(null)}
-                  className="px-4 py-2 text-gray-600 font-medium"
+                  className="text-slate-400 font-black text-xs uppercase tracking-widest hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700"
+                  className="bg-amber-500 text-black px-12 py-5 rounded-full font-black text-xs uppercase tracking-widest hover:bg-amber-400 transition-all shadow-xl shadow-amber-500/20 active:scale-95"
                 >
-                  Save Address
+                  Confirm Destination
                 </button>
               </div>
             </form>
@@ -458,49 +322,54 @@ const JoinedWaveCard = ({ waveId }: { waveId: string }) => {
     fetchWave();
   }, [waveId]);
 
-  if (!wave) return <div className="h-40 bg-slate-50 animate-pulse rounded-[2rem]"></div>;
+  if (!wave) return <div className="h-80 bg-white/[0.02] animate-pulse rounded-[3.5rem] border border-white/[0.05]"></div>;
 
   return (
-    <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
-      <div className="flex justify-between items-start mb-6">
-        <h4 className="font-bold text-slate-900 truncate pr-2 group-hover:text-indigo-600 transition-colors">{wave.productName}</h4>
-        <span className={`text-[10px] px-2.5 py-1 rounded-full font-black uppercase tracking-widest ${
-          wave.status === 'active' ? 'bg-indigo-50 text-indigo-700' :
-          wave.status === 'locking' ? 'bg-amber-50 text-amber-700 animate-pulse' :
-          wave.status === 'locked' ? 'bg-emerald-50 text-emerald-700' :
-          'bg-slate-100 text-slate-600'
-        }`}>
-          {wave.status}
-        </span>
-      </div>
+    <div className="group relative bg-white/[0.03] p-10 rounded-[3.5rem] border border-white/[0.05] hover:border-indigo-500/30 transition-all duration-500 hover:-translate-y-2 overflow-hidden shadow-2xl">
+      {/* Background dynamic glow */}
+      <div className={`absolute top-0 right-0 w-32 h-32 blur-[60px] rounded-full opacity-10 group-hover:opacity-20 transition-opacity ${
+        wave.status === 'active' ? 'bg-indigo-500' :
+        wave.status === 'locking' ? 'bg-amber-500' :
+        wave.status === 'locked' ? 'bg-emerald-500' : 'bg-slate-500'
+      }`}></div>
       
-      <div className="space-y-4">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center text-slate-500 font-medium">
-            <Users className="h-3.5 w-3.5 mr-2 text-indigo-500" />
-            <span className="text-slate-900 font-bold mr-1">{wave.currentParticipants}</span>
-            <span className="text-slate-400">/ {wave.threshold}</span>
+      <div className="relative z-10">
+        <div className="flex justify-between items-start mb-8">
+          <div className="flex flex-col">
+            <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-2">Protocol Identification</span>
+            <h4 className="text-2xl font-black text-white tracking-tight leading-tight group-hover:text-indigo-400 transition-colors">{wave.productName}</h4>
           </div>
-          <div className="text-indigo-600 font-bold text-xs">
-            {Math.round((wave.currentParticipants / wave.threshold) * 100)}% Full
+          <div className={`px-4 py-1.5 rounded-full border ${
+            wave.status === 'active' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
+            wave.status === 'locking' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20 animate-pulse' :
+            wave.status === 'locked' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+            'bg-white/5 text-slate-500 border-white/10'
+          } text-[9px] font-black uppercase tracking-[0.2em]`}>
+            {wave.status}
           </div>
         </div>
         
-        <div className="w-full bg-slate-50 rounded-full h-2 overflow-hidden">
-          <div 
-            className="bg-indigo-600 h-full rounded-full transition-all duration-500" 
-            style={{ width: `${Math.min(((wave.currentParticipants || 0) / wave.threshold) * 100, 100)}%` }}
-          ></div>
+        <WaveProgressVisualizer current={wave.currentParticipants} target={wave.threshold} status={wave.status} />
+        
+        <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="flex -space-x-2">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-6 w-6 rounded-full border-2 border-[#0b0c10] bg-slate-800 flex items-center justify-center">
+                  <Users className="h-3 w-3 text-slate-500" />
+                </div>
+              ))}
+            </div>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{wave.currentParticipants} Active Nodes</span>
+          </div>
+          
+          <Link 
+            to={`/wave/${wave.waveId}`}
+            className="flex items-center text-indigo-400 text-[10px] font-black uppercase tracking-widest hover:text-indigo-300 transition-colors group/link"
+          >
+            Manage Protocol™ <ExternalLink className="ml-2 h-3.5 w-3.5 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+          </Link>
         </div>
-      </div>
-      
-      <div className="mt-6 pt-6 border-t border-slate-50">
-        <Link 
-          to={`/wave/${waveId}`}
-          className="flex items-center justify-center text-indigo-600 text-xs font-black uppercase tracking-widest hover:text-indigo-700 transition-colors"
-        >
-          View Live Status© <ExternalLink className="ml-2 h-3 w-3" />
-        </Link>
       </div>
     </div>
   );
