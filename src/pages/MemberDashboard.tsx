@@ -1,16 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { collection, query, where, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, ExternalLink, Users, AlertCircle, Zap, Shield } from 'lucide-react';
 import WaveProgressVisualizer from '../components/WaveProgressVisualizer';
 
 const MemberDashboard = () => {
   const [user] = useAuthState(auth);
+  const navigate = useNavigate();
   const [showAddressForm, setShowAddressForm] = useState<string | null>(null);
   const [address, setAddress] = useState({ street: '', city: '', postcode: '', country: 'UK' });
+
+  useEffect(() => {
+    const checkSupplierEject = async () => {
+      if (user) {
+        const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
+        if (supplierDoc.exists()) {
+          navigate('/supplier');
+        }
+      }
+    };
+    checkSupplierEject();
+  }, [user, navigate]);
 
   // Query waves user has joined
   const joinedWavesQuery = user ? query(collection(db, 'waveMembers'), where('userId', '==', user.uid)) : null;

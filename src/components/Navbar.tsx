@@ -29,7 +29,10 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between h-24">
           <div className="flex">
-            <Link to="/" className="flex-shrink-0 flex items-center space-x-4 group">
+            <Link 
+              to={isSupplier ? "/supplier" : "/"} 
+              className="flex-shrink-0 flex items-center space-x-4 group"
+            >
               <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:border-indigo-500/50 group-hover:bg-indigo-500/10 transition-all duration-500 group-hover:rotate-[15deg]">
                 <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain brightness-0 invert opacity-80 group-hover:opacity-100" />
               </div>

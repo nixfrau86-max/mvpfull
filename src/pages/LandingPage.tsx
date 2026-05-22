@@ -1,13 +1,29 @@
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query, where } from 'firebase/firestore';
-import { db } from '../firebase';
-import { Link } from 'react-router-dom';
+import { collection, query, where, doc, getDoc } from 'firebase/firestore';
+import { db, auth } from '../firebase';
+import { Link, useNavigate } from 'react-router-dom';
 import { Clock, Users, ArrowRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useEffect } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 const LandingPage = () => {
+  const [user] = useAuthState(auth);
+  const navigate = useNavigate();
   const wavesQuery = query(collection(db, 'waves'), where('status', '==', 'active'));
   const [waves, loading, error] = useCollectionData(wavesQuery);
+
+  useEffect(() => {
+    const checkSupplierRedirect = async () => {
+      if (user) {
+        const supplierDoc = await getDoc(doc(db, 'suppliers', user.uid));
+        if (supplierDoc.exists()) {
+          navigate('/supplier');
+        }
+      }
+    };
+    checkSupplierRedirect();
+  }, [user, navigate]);
 
   return (
     <div className="bg-[#0b0c10] min-h-screen text-slate-300">

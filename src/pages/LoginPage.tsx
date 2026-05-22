@@ -12,15 +12,29 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const navigateToTarget = async (uid: string) => {
+    const supplierDoc = await getDoc(doc(db, 'suppliers', uid));
+    if (supplierDoc.exists()) {
+      navigate('/supplier');
+    } else if (email === 'admin@collectivesavers.com') {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     try {
+      let uid = '';
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        uid = userCredential.user.uid;
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        uid = user.uid;
         
         // Create user doc in Firestore
         await setDoc(doc(db, 'users', user.uid), {
@@ -30,7 +44,7 @@ const LoginPage = () => {
           createdAt: new Date().toISOString()
         });
       }
-      navigate('/dashboard');
+      await navigateToTarget(uid);
     } catch (err: any) {
       setError(err.message);
     }
@@ -51,7 +65,7 @@ const LoginPage = () => {
           createdAt: new Date().toISOString()
         });
       }
-      navigate('/dashboard');
+      await navigateToTarget(user.uid);
     } catch (err: any) {
       setError(err.message);
     }
